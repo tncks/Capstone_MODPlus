@@ -1,10 +1,6 @@
 package moda;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-
-import processedDB.PeptideMatchToProtein;
-import processedDB.StemTagTrie;
 
 import msutil.IonGraph;
 import msutil.PGraph;
@@ -58,32 +54,7 @@ public class DPPeptide implements Comparable<DPPeptide> {
 		noMods = iG.getModifiedResd();
 	}
 	
-	public String toIdentification( StemTagTrie stemDB, double observedMW ) {
-		StringBuffer x= new StringBuffer();
-		
-		x.append( String.format("%.4f\t", peptMass) );
-		x.append( String.format("%.4f\t", observedMW-peptMass) );		
 
-		x.append( String.format("%d\t", score) );
-		x.append( String.format("%.4f\t", prob) );
-		
-		ArrayList<PeptideMatchToProtein> protMatch = stemDB.getMatchProteins( peptide );
-		String wrapAA = protMatch.getFirst().getWrappingAA();
-		x.append( wrapAA.charAt(0)+".");
-		for( int i=0; i<ptms.length; i++){
-			x.append(peptide.charAt(i));
-			if( ptms[i] != 0 ){
-				if( ptms[i] > 0 ) x.append("+");
-				x.append( MODaConst.ptmUnit.toString((ptms[i])) );
-			}
-		}
-		x.append( "."+wrapAA.charAt(1)+"\t" );		
-		x.append( protMatch.getFirst().toString() );
-		for( int i=1; i<protMatch.size(); i++ ){
-			x.append( ";" + protMatch.get(i).toString() );
-		}
-		return x.toString();
-	}
 	
 	public String toString(){
 		StringBuffer x= new StringBuffer();
@@ -165,40 +136,7 @@ class DPPeptideRefinedComparator implements Comparator<DPPeptide>{
 	}
 }
 
-class DPPeptideProbComparator implements Comparator<DPPeptide>{
-	
-	public int compare(DPPeptide AA, DPPeptide BB){
-	
-		if( AA.prob < BB.prob ) return 1;
-		else if( AA.prob > BB.prob ) return -1;
-		
-		if( AA.score < BB.score ) return 1;
-		else if( AA.score > BB.score ) return -1;
 
-		int aaMod = 0, bbMod = 0;
-		int aaLen = AA.peptide.length(), bbLen = BB.peptide.length();
-		
-		for(int i=0; i<aaLen; i++){
-			if( AA.ptms[i]!= 0 ) aaMod += (int) Math.abs( AA.ptms[i] );
-		}
-		for(int i=0; i<bbLen; i++){
-			if( BB.ptms[i]!= 0 ) bbMod += (int) Math.abs( BB.ptms[i] );
-		}
-		
-		if( aaMod > bbMod ) return 1;
-		else if( aaMod < bbMod ) return -1;
-		
-		if( aaLen > bbLen ) return 1;
-		else if( aaLen < bbLen ) return -1;
-		
-		return 0;
-	}	
-	
-	public boolean equals(DPPeptide AA, DPPeptide BB){
-		return AA == BB;
-	}
-	
-}
 
 
 

@@ -1,6 +1,7 @@
 package moda;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import msutil.MSMass;
 import msutil.PGraph;
@@ -37,41 +38,100 @@ public class MultiMOD {
         return annotation;
     }
 
-    public static DPHeap run_static_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
 
-        PRM prmTable;
-        if (graph.getCharge() > 2) prmTable = new PRMforHighCharge(graph);
-        else prmTable = new PRM(graph);
-
-        DPHeap topList = new DPHeap();
-        ChainTagPeptide[] DBList = (ChainTagPeptide[]) cpool.getList();
-
-        for (int i = 0; i < cpool.size(); i++) {
-            static_multi_align(DBList[i], prmTable, ixPDB, topList);
+    /**
+     * hi_mul_1
+     *
+     */
+    public static void processArrayWithAlign_1(
+            ChainTagPeptide[] processArray,
+            PRM prmTable,
+            TagTrie ixPDB,
+            DPHeap topList
+    ) {
+        // Core processing loop extracted as a separate method
+        for (ChainTagPeptide db_list_entry : processArray) {
+            static_multi_align(db_list_entry, prmTable, ixPDB, topList);
         }
-        topList.setStemNo(ixPDB.getStemNo());
+    }
+    //
 
+
+    /**
+     * hi_mul_2
+     *
+     */
+    public static void processArrayWithAlign_2(
+            ChainTagPeptide[] processArray,
+            PRM prmTable,
+            TagTrie ixPDB,
+            DPHeap topList
+    ) {
+        // Core processing loop extracted as a separate method
+        for (ChainTagPeptide db_list_entry : processArray) {
+            dynamic_multi_align(db_list_entry, prmTable, ixPDB, topList);
+        }
+    }
+    //
+
+
+    public static DPHeap run_static_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
+        int poolsize = cpool.size();
+        if (poolsize == 0) {
+            DPHeap emptyList = new DPHeap();
+            emptyList.setStemNo(ixPDB.getStemNo());
+            return emptyList;
+        }
+
+        PRM prmTable = (graph.getCharge() > 2)
+                ? new PRMforHighCharge(graph)
+                : new PRM(graph);
+
+
+        ChainTagPeptide[] DBList = (ChainTagPeptide[]) cpool.getList();
+        DPHeap topList = new DPHeap();
+
+        ChainTagPeptide[] processArray = Arrays.copyOf(DBList, poolsize);
+
+
+        processArrayWithAlign_1(processArray,
+                prmTable,
+                ixPDB,
+                topList);
+
+        topList.setStemNo(ixPDB.getStemNo());
         return topList;
     }
 
     public static DPHeap run_dynamic_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
+        int poolsize = cpool.size();
+        if (poolsize == 0) {
+            DPHeap emptyList = new DPHeap();
+            emptyList.setStemNo(ixPDB.getStemNo());
+            return emptyList;
+        }
 
-        PRM prmTable;
-        if (graph.getCharge() > 2) prmTable = new PRMforHighCharge(graph);
-        else prmTable = new PRM(graph);
+        PRM prmTable = (graph.getCharge() > 2)
+                ? new PRMforHighCharge(graph)
+                : new PRM(graph);
 
-        DPHeap topList = new DPHeap();
 
         ChainTagPeptide[] DBList = (ChainTagPeptide[]) cpool.getList();
-        for (int i = 0; i < cpool.size(); i++) {
-            dynamic_multi_align(DBList[i], prmTable, ixPDB, topList);
-        }
-        topList.setStemNo(ixPDB.getStemNo());
+        DPHeap topList = new DPHeap();
 
+        ChainTagPeptide[] processArray = Arrays.copyOf(DBList, poolsize);
+
+
+        processArrayWithAlign_2(processArray,
+                prmTable,
+                ixPDB,
+                topList);
+
+        topList.setStemNo(ixPDB.getStemNo());
         return topList;
     }
 
-    private static void static_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
+    public static void static_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
         ArrayList<SequenceTag> mTagList = entry.getMatchedTags();
@@ -157,7 +217,7 @@ public class MultiMOD {
         }
     }
 
-    private static void dynamic_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
+    public static void dynamic_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
         ArrayList<SequenceTag> mTagList = entry.getMatchedTags();
@@ -249,8 +309,8 @@ public class MultiMOD {
         }
     }
 
-    static DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                          MatCell[][] specMatrix, PRM prmTable, double pmzErr, int[] ionType) {
+    public static DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+                                                  MatCell[][] specMatrix, PRM prmTable, double pmzErr, int[] ionType) {
 
         DPPeptide best = new DPPeptide(), temp = null;
 
@@ -274,8 +334,8 @@ public class MultiMOD {
         return best;
     }
 
-    static DPPeptide dynamicProgramming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                        MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
+    public static DPPeptide dynamicProgramming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+                                                MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
 
         int colMax = smEnd - smStart;
 
@@ -367,8 +427,8 @@ public class MultiMOD {
         return identification;
     }
 
-    static DPPeptide dynamicProgrammingWithoutTags(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                                   MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
+    public static DPPeptide dynamicProgrammingWithoutTags(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+                                                           MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
 
         int colMax = smEnd - smStart, endingTag = rowMax - 1;
         if (specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass) return null;
@@ -446,9 +506,4 @@ public class MultiMOD {
     }
 
 }
-
-
-
-
-
 

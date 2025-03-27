@@ -1,21 +1,20 @@
 package moda;
 
-import processedDB.CandidateContainer;
-import processedDB.StemTagTrie;
-import processedDB.TagTrie;
+import processedDB.*;
 
 import msutil.MSMass;
 import msutil.PGraph;
 import msutil.PRM;
 import msutil.PRMforHighCharge;
 
+import java.util.Arrays;
+
 import modi.Constants;
 import modi.TagPool;
-import processedDB.MODPeptide;
 
 public class OneMOD {
 
-    private static int bestOnlineScore = 2;
+    private static int bestOnlineScore = 2; // shared globally <- should ensure the Atomicity
 
 
     public static DPHeap getHeatedPeptides(StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection) {
@@ -39,44 +38,104 @@ public class OneMOD {
         return annotation;
     }
 
+
+
+    /**
+     * hi_one_1
+     *
+     */
+    public static void processArrayWithAlign_01(
+            MODPeptide[] processArray,
+            PRM prmTable,
+            TagTrie ixPDB,
+            DPHeap topList
+    ) {
+        // Core processing loop extracted as a separate method
+        for (MODPeptide db_list_entry : processArray) {
+            static_single_align(db_list_entry, prmTable, ixPDB, topList);
+        }
+    }
+    //
+
+
+    /**
+     * hi_one_2
+     *
+     */
+    public static void processArrayWithAlign_02(
+            MODPeptide[] processArray,
+            PRM prmTable,
+            TagTrie ixPDB,
+            DPHeap topList
+    ) {
+        // Core processing loop extracted as a separate method
+        for (MODPeptide db_list_entry : processArray) {
+            dynamic_single_align(db_list_entry, prmTable, ixPDB, topList);
+        }
+    }
+    //
+
+
+
+
+
     public static DPHeap run_static_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
+        int poolsize = cpool.size();
+        if (poolsize == 0) {
+            DPHeap emptyList = new DPHeap();
+            emptyList.setStemNo(ixPDB.getStemNo());
+            return emptyList;
+        }
 
-        PRM prmTable;
-        if (graph.getCharge() > 2) prmTable = new PRMforHighCharge(graph);
-        else prmTable = new PRM(graph);
+        PRM prmTable = (graph.getCharge() > 2)
+                ? new PRMforHighCharge(graph)
+                : new PRM(graph);
 
-        DPHeap topList = new DPHeap();
 
         MODPeptide[] DBList = cpool.getList();
+        DPHeap topList = new DPHeap();
 
-        int poolsize = cpool.size();
-        for (int i = 0; i < poolsize; i++) {
-            static_single_align(DBList[i], prmTable, ixPDB, topList);
-        }
+        MODPeptide[] processArray = Arrays.copyOf(DBList, poolsize);
+
+
+        processArrayWithAlign_01(processArray,
+                prmTable,
+                ixPDB,
+                topList);
+
         topList.setStemNo(ixPDB.getStemNo());
-
         return topList;
     }
 
     public static DPHeap run_dynamic_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
+        int poolsize = cpool.size();
+        if (poolsize == 0) {
+            DPHeap emptyList = new DPHeap();
+            emptyList.setStemNo(ixPDB.getStemNo());
+            return emptyList;
+        }
 
-        PRM prmTable;
-        if (graph.getCharge() > 2) prmTable = new PRMforHighCharge(graph);
-        else prmTable = new PRM(graph);//*/
+        PRM prmTable = (graph.getCharge() > 2)
+                ? new PRMforHighCharge(graph)
+                : new PRM(graph);
 
-        DPHeap topList = new DPHeap();
 
         MODPeptide[] DBList = cpool.getList();
-        int poolsize = cpool.size();
-        for (int i = 0; i < poolsize; i++) {
-            dynamic_single_align(DBList[i], prmTable, ixPDB, topList);
-        }
-        topList.setStemNo(ixPDB.getStemNo());
+        DPHeap topList = new DPHeap();
 
+        MODPeptide[] processArray = Arrays.copyOf(DBList, poolsize);
+
+
+        processArrayWithAlign_02(processArray,
+                prmTable,
+                ixPDB,
+                topList);
+
+        topList.setStemNo(ixPDB.getStemNo());
         return topList;
     }
 
-    private static void static_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
+    public static void static_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
 
@@ -91,10 +150,10 @@ public class OneMOD {
 
         DPPeptide temp = null;
         double delta = observedMass - MSMass.getPepMass(peptide) - MODaConst.TERMINALMOD;
-        double nTermDeletion = 0., cTermDeletion = 0.;
+        double nTermDeletion = 0.0, cTermDeletion = 0.0;
         int npi = 0, cpi = colMax;
         for (int i = entry.getStart(); i <= entry.getLeft(); i++) {
-            cTermDeletion = 0.;
+            cTermDeletion = 0.0;
             cpi = colMax;
             for (int j = entry.getEnd(); j >= entry.getRight(); j--) {
 
@@ -140,7 +199,7 @@ public class OneMOD {
         }
     }
 
-    private static void dynamic_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
+    public static void dynamic_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
 
@@ -204,8 +263,8 @@ public class OneMOD {
         }
     }
 
-    static DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                          MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
+    public static DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+                                                  MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
 
         DPPeptide best = new DPPeptide(), temp = null;
 
@@ -227,8 +286,8 @@ public class OneMOD {
         return best;
     }
 
-    static DPPeptide dynamic_programming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                         MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
+    public static DPPeptide dynamic_programming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+                                                 MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
 
         int colMax = smEnd - smStart, endingTag = 1;
         if (specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass) return null;
