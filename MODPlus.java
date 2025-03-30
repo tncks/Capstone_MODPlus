@@ -325,7 +325,6 @@ public class MODPlus {
         return 0;
     }
 
-
     public static void run(String arg, int numThreads) throws Exception {
         try {
             if (set_parameter(arg) != 0) return;

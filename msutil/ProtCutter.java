@@ -86,9 +86,13 @@ public class ProtCutter {
 
     public boolean isCleavage(int prev_aa, int next_aa) {
         char TERMINAL_RES = '-';
-        if (prev_aa == TERMINAL_RES || next_aa == TERMINAL_RES) return true;
-        if (cleaveMap[prev_aa - 'A'] == C_TERM || cleaveMap[prev_aa - 'A'] == BOTH_TERM) return true;
-        return cleaveMap[next_aa - 'A'] == N_TERM || cleaveMap[next_aa - 'A'] == BOTH_TERM;
+        if (prev_aa == TERMINAL_RES || next_aa == TERMINAL_RES)
+            return true;
+        int tmp = cleaveMap[prev_aa - 'A'];
+        if (tmp == C_TERM || tmp == BOTH_TERM)
+            return true;
+        tmp = cleaveMap[next_aa - 'A'];
+        return tmp == N_TERM || tmp == BOTH_TERM;
     }
 
 

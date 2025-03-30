@@ -21,10 +21,11 @@ public class MSMass {
 	
 	public static double getPepMass(String pept){
 		double mass=0;
-		for(int i=0; i<pept.length(); i++){			
-			if( aaMass[pept.charAt(i)-'A'] == 0 )
+		for(int i=0; i<pept.length(); i++){
+			double tmp = aaMass[pept.charAt(i)-'A'];
+			if( tmp == 0 )
 				return -1;
-			mass += aaMass[pept.charAt(i)-'A'];
+			mass += tmp;
 		}
 		return mass;
 	}

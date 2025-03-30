@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
 import msutil.ProtCutter;
 import modi.Constants;
 import modi.Peptide;
@@ -63,12 +64,18 @@ public class ProtDatabase {
 	public String getProteinIdentity(Peptide peptide) { 
 		return proteins[searchProtein(peptide.getSrcProteinInfo().getFirst().getStartPos())]; }
 
+	/*
 	public String getPeptide(int s, int e){ //inclusive, exclusive like substring
 		StringBuffer x= new StringBuffer();
 		for(int i=s; i<e; i++){
 			x.append( (char)sequence[i] );			
 		}	
 		return x.toString();
+	}*/
+
+	// 만약 peptide 데이터가 ASCII 범위(0~127)라면 StandardCharsets.US_ASCII를 사용해도됨.
+	public String getPeptide(int s, int e) {
+		return new String(sequence, s, e - s, StandardCharsets.ISO_8859_1);
 	}
 	
 	public String getSequenceAroundPeptide(int s, int e, int around){ //inclusive, exclusive like substring

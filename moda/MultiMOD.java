@@ -71,6 +71,7 @@ public class MultiMOD {
         return topList;
     }
 
+    // 이미 최적화 코드 같음(3/30)
     private static void static_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
@@ -274,6 +275,7 @@ public class MultiMOD {
         return best;
     }
 
+    // 최적화 완료(3/30)
     static DPPeptide dynamicProgramming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
                                         MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
 
@@ -291,7 +293,6 @@ public class MultiMOD {
 
                 double max = MODaConst.baseScore;
                 for (int d = 0; d < rowMax; d++) {
-
                     prevNode = specMatrix[d][n - 1];
                     if (prevNode.isAAJump == -1) continue;
 
