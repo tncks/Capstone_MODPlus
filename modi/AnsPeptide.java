@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 
-import msutil.IonGraph;
-import msutil.PGraph;
-import msutil.Scoring;
+import msutil.*;
 import processedDB.PeptideMatchToProtein;
 
 public class AnsPeptide implements Comparable<AnsPeptide> {
@@ -42,7 +40,7 @@ public class AnsPeptide implements Comparable<AnsPeptide> {
 	public String getPeptideSequence(){ return peptide.toString(); }
 
 	public void evaluatePSM(PGraph pg){//using ptm information
-		IonGraph iG = Scoring.PeptideSpectrumMatch(peptide.toString(), ptms, ptmList, pg );
+		IonGraph iG = PeptideSpectrumMatch(peptide.toString(), ptms, ptmList, pg );
 		score = iG.getRankScore();
 		prob 	= iG.getProb();
 		roundprob 	= Constants.round(iG.getProb()*pointRounding)/pointRounding;
@@ -50,6 +48,15 @@ public class AnsPeptide implements Comparable<AnsPeptide> {
 		mzDev 	= iG.getMassError();		
 		pepMass = iG.getCalculatedMW();		
 		score -= (2-peptide.getNTT())*3;
+	}
+
+	public IonGraph PeptideSpectrumMatch( String peptide, double[] ptms, PTM[] ptmList, PGraph graph ){//for modeye final scoring
+		IonGraph iGraph;
+		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, ptmList, graph);
+		else iGraph= new TRAPGraph(peptide, ptms, ptmList, graph);
+
+		iGraph.evaluateMatchQuality(graph);
+		return iGraph;
 	}
 
 	public String toMODPlus( double obMW, ArrayList<PeptideMatchToProtein> protMatch ){

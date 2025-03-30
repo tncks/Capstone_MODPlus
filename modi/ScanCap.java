@@ -1,20 +1,12 @@
 package modi;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.StringTokenizer;
-
 public class ScanCap implements Comparable<ScanCap> {
 	private final String 	title;
 	private final double 	pmz;
 	private final double 	neutralMW;
 	private final int 	charge;
 	private int 	scanNo;
-	private long 	offset;
-	
-	private static final double tolerance= Constants.massToleranceForDenovo;
+
 	
 	public ScanCap(String title, double pmz, int charge){
 	
@@ -32,79 +24,15 @@ public class ScanCap implements Comparable<ScanCap> {
 		this.neutralMW 	= (pmz - Constants.Proton)*charge;
 	}
 
-	public void setOffset(long offset){ this.offset = offset; }
 	public String getTitle(){ return title; }
-	public int getScanNumber(){ return scanNo; }
 	public double getObservedMW(){ return neutralMW; }
-	public double getPMZ(){ return pmz; }
 	public int getCharge(){ return charge; }
-	public long getOffset(){ return offset; }
-	
-	public Spectrum getSpectrum( RandomAccessFile in ) throws IOException {
-		
-		if( Constants.rangeForIsotopeIncrement != 0 ){
-			Constants.maxNoOfC13 = (int)Math.ceil( neutralMW / Constants.rangeForIsotopeIncrement );			
-		}
-		
-		if( Constants.PPMTolerance != 0 ) {
-			Constants.precursorAccuracy = Constants.PPMtoDalton(neutralMW, Constants.PPMTolerance);
-		}
-		Constants.precursorTolerance = Constants.precursorAccuracy + Constants.maxNoOfC13*Constants.IsotopeSpace;
-	
-		String s;
-		
-		ArrayList<RawP> rawPL = new ArrayList<>();
-		in.seek( this.offset );
-		while( (s = in.readLine()) != null ) {
-			StringTokenizer token = new StringTokenizer(s);
-			if( token.countTokens() > 1 ){
-				if( !Character.isDigit(s.charAt(0)) ) break;
-				rawPL.add( new RawP(Double.parseDouble(token.nextToken()), Double.parseDouble(token.nextToken())) );
-			}
-			else break;
-		}
-		Collections.sort( rawPL );
-		
-	//	processingiTRAQ(rawPL);
-		
-		int index = 0;
-		Spectrum spectrum = new Spectrum( this.pmz, this.charge, this.title );
-		
-		double basePeakIntensity=0, TIC=0;
-		double tarMass=0, tarInten=0;
-		for( RawP rp : rawPL ) {
-			double mass = rp.mz;
-			double intensity = rp.it;
-			
-			if( intensity <= 0 || mass <= 0 ) continue;
-			if( mass > neutralMW ) continue;
-		//	if( Math.abs( mass-pmz ) < 2. ) continue;	
-			
-			if( ( mass - tarMass ) < tolerance ){
-				double sum = tarInten + intensity;
-				tarMass = tarMass*(tarInten/sum)+ mass*(intensity/sum);
-				tarInten += intensity;
-				spectrum.get(index-1).set(tarMass, tarInten);
-			}
-			else{
-				spectrum.add( new Peak(index++, mass, intensity) );
-				tarMass = mass;
-				tarInten = intensity; 
-			}
-			TIC += intensity;
-			if( tarInten > basePeakIntensity )
-				basePeakIntensity= tarInten;
-		}		
-		spectrum.setExtraInformation( basePeakIntensity, TIC );
-		
-		Constants.gapTolerance = Constants.fragmentTolerance*2;
-		Constants.nonModifiedDelta = (Constants.precursorTolerance<Constants.massToleranceForDenovo)? Constants.precursorTolerance : Constants.massToleranceForDenovo;
-				
-		if( Constants.precursorTolerance > Constants.gapTolerance )
-			Constants.gapTolerance = Constants.precursorTolerance;		
-		
-		return spectrum; 
+
+	public double PPMtoDalton(double mass, double ppm){
+		return mass/1000000*ppm;
 	}
+	
+
 	
 	private static class RawP implements Comparable<RawP> {
 		final double mz;
@@ -130,51 +58,5 @@ public class ScanCap implements Comparable<ScanCap> {
 		else return 0;
 	}
 	
-	private void xprocessingiTRAQ(ArrayList<RawP> rawPL){
-		
-		ArrayList<RawP> reporters = new ArrayList<>();
-		reporters.add( new RawP(114.1105, Constants.fragmentTolerance) );//reporterIon114
-		reporters.add( new RawP(115.1074, Constants.fragmentTolerance) );//reporterIon115
-		reporters.add( new RawP(116.1107, Constants.fragmentTolerance) );//reporterIon116
-		reporters.add( new RawP(117.1141, Constants.fragmentTolerance) );//reporterIon117
-		
-		reporters.add( new RawP(Constants.NTERM_FIX_MOD + Constants.Proton, Constants.fragmentTolerance) );//iTRAQ TAG
-		
-		int fragCS = 1;
-		while( true ){
-			double compItraqTag = (this.neutralMW - Constants.NTERM_FIX_MOD + Constants.Proton*fragCS)/fragCS;
-	
-			double secondIso = compItraqTag + Constants.IsotopeSpace/fragCS;
-			double thirdIso  = secondIso + Constants.IsotopeSpace/fragCS;
-			double forthIso  = thirdIso + Constants.IsotopeSpace/fragCS;
-			
-			reporters.add( new RawP(compItraqTag, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			reporters.add( new RawP(secondIso, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			reporters.add( new RawP(thirdIso, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			reporters.add( new RawP(forthIso, Constants.fragmentTolerance) );//precursor without iTRAQ TAG//*/
 
-//			reporters.add( new RawP(compItraqTag, (3*Constants.IsotopeSpace/fragCS)+Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			for(int i=1; i<=Constants.maxNoOfC13; i++){
-				reporters.add( new RawP(compItraqTag-i*Constants.IsotopeSpace/fragCS, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			}//*/
-
-			if( ++fragCS >= this.charge ) break;
-		}
-
-		Collections.sort(reporters);
-		
-		int start = 0;
-		for( RawP rp : reporters ){
-			for (int i=start; i<rawPL.size(); i++){
-				if( rawPL.get(i).mz < rp.mz-rp.it ) continue;
-				else if( rawPL.get(i).mz > rp.mz+rp.it ) {
-					start = i;
-					break;
-				}				
-				rawPL.remove(i);
-				i--;
-			}
-		}
-	
-	}
 }

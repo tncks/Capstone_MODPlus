@@ -2,9 +2,7 @@ package moda;
 
 import java.util.Comparator;
 
-import msutil.IonGraph;
-import msutil.PGraph;
-import msutil.Scoring;
+import msutil.*;
 
 import modi.Constants;
 
@@ -16,7 +14,7 @@ public class DPPeptide implements Comparable<DPPeptide> {
 	String peptide="X.XXX.X";
 	double[] ptms;
 	int stem;
-	public int maxConsecutiveAALength;
+	int maxConsecutiveAALength;
 	int protein;
 	int NTT=0, noMods=0;
 	
@@ -46,18 +44,27 @@ public class DPPeptide implements Comparable<DPPeptide> {
 	}
 	
 	public void evaluatePSM(PGraph pg) {
-		IonGraph iG = Scoring.PeptideSpectrumMatch( peptide, ptms, pg );
+		IonGraph iG = PeptideSpectrumMatch( peptide, ptms, pg );
 		prob = iG.getProb();
 		score = iG.getRankScore();
 		peptMass = iG.getCalculatedMW();
 		maxConsecutiveAALength = iG.getMaxConsecutiveAALength();
 		noMods = iG.getModifiedResd();
 	}
+
+	public IonGraph PeptideSpectrumMatch( String peptide, double[] ptms, PGraph graph ){//for moda final scoring
+		IonGraph iGraph;
+		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, graph);
+		else iGraph= new TRAPGraph(peptide, ptms, graph);
+
+		iGraph.evaluateMatchQuality(graph);
+		return iGraph;
+	}
 	
 
 	
 	public String toString(){
-		StringBuffer x= new StringBuffer();
+		StringBuilder x= new StringBuilder();
 		for( int i=0; i<ptms.length; i++){
 			x.append(peptide.charAt(i));
 			if( ptms[i] != 0 ){

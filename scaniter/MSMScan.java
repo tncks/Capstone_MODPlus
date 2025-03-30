@@ -2,7 +2,6 @@ package scaniter;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.StringTokenizer;
 
 import modi.Constants;
 import modi.Peak;
@@ -22,8 +21,7 @@ public class MSMScan {
 	private final int 		charge;
 	private Spectrum 	peaklist;
 	private static final double tolerance= Constants.massToleranceForDenovo;
-	
-	//private double 	fragmentTol = 0;
+
 	private double 	precursorTolerance = 0;
 	private double 	precursorAccuracy= 0;
 	private double 	gapTolerance = 0;
@@ -52,16 +50,21 @@ public class MSMScan {
 
 	public String 	getHeader(){ return String.format("%d\t%.4f\t%d\t%d\t%s",
 													specIndex, neutralMW, charge, scanNo, title); }
-	
-	public Spectrum getSpectrum() { 
-		Constants.precursorTolerance= precursorTolerance;
-		Constants.precursorAccuracy	= precursorAccuracy;
-		Constants.gapTolerance 		= gapTolerance;
-		Constants.gapAccuracy 		= precursorAccuracy + 2*Constants.fragmentTolerance;
-		Constants.nonModifiedDelta 	= nonModifiedDelta;
-		Constants.maxNoOfC13 		= maxNoOfC13;
+
+
+	/// /* * * * */ // problematic
+	public Spectrum getSpectrum() {
+		//Constants.PPMTolerance is also important factor (it has code dependency)
+		Constants.precursorTolerance= precursorTolerance; /*dependency check temporally finished*/ //문제 상황 파악 어느정도 완료되었다는 뜻
+		Constants.precursorAccuracy	= precursorAccuracy; /*dependency check temporally finished*/
+		Constants.gapTolerance 		= gapTolerance;     /*dependency check temporally finished*/
+		Constants.gapAccuracy 		= precursorAccuracy + 2*Constants.fragmentTolerance; /*dependency check temporally finished*/
+		Constants.nonModifiedDelta 	= nonModifiedDelta; /*dependency check temporally finished*/
+		Constants.maxNoOfC13 		= maxNoOfC13; /*dependency check temporally finished*/
 		return peaklist; 
-	}
+	}/*****/
+
+
 
 	public boolean setSpectrum(ArrayList<RawPeak> rawPL) {
 		
@@ -72,7 +75,7 @@ public class MSMScan {
 		if( Constants.rangeForIsotopeIncrement != 0 ) maxNoOfC13 = (int)Math.ceil( neutralMW / Constants.rangeForIsotopeIncrement );
 		else maxNoOfC13 = Constants.maxNoOfC13;
 		
-		if( Constants.PPMTolerance != 0 ) precursorAccuracy = Constants.PPMtoDalton( neutralMW, Constants.PPMTolerance );
+		if( Constants.PPMTolerance != 0 ) precursorAccuracy = PPMtoDalton( neutralMW, Constants.PPMTolerance );
 		else precursorAccuracy = Constants.precursorAccuracy;
 		
 		precursorTolerance = precursorAccuracy + maxNoOfC13*Constants.IsotopeSpace;
@@ -106,7 +109,7 @@ public class MSMScan {
 		spectrum.setExtraInformation( basePeakIntensity, TIC );
 		
 		gapTolerance = Constants.fragmentTolerance*2;
-		nonModifiedDelta = (precursorTolerance < Constants.massToleranceForDenovo)? precursorTolerance : Constants.massToleranceForDenovo;
+		nonModifiedDelta = (precursorTolerance < Constants.massToleranceForDenovo)? precursorTolerance : Constants.massToleranceForDenovo; ///////
 				
 		if( precursorTolerance > gapTolerance ) gapTolerance += precursorTolerance;
 		
@@ -159,7 +162,12 @@ public class MSMScan {
 		}	
 	}
 
-	private static ArrayList<Integer> getCharge(String csline){
+	public double PPMtoDalton(double mass, double ppm)
+	{
+		return mass/1000000*ppm;
+	}
+
+	/*private static ArrayList<Integer> getCharge(String csline){
 		ArrayList<Integer> cslist = new ArrayList<>();
 		
 		StringTokenizer csTok = new StringTokenizer(csline, "|");
@@ -188,7 +196,7 @@ public class MSMScan {
 			if( t_cs!= 0 ) cslist.add(t_cs);
 		}
 		return cslist;
-	}
+	}*/
 	
 }
 

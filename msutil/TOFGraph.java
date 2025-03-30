@@ -159,8 +159,12 @@ public class TOFGraph extends IonGraph {
 		if( charge < 3 ) discriminant= 0.2073*coverScore + 14.2075*seqCoverage + 0.9258*maxConsecutive - 17.2304;
 		else discriminant= 0.1773*coverScore + 5.402*seqCoverage + 0.8193*maxConsecutive - 8.1191; //*/
 		
-		prob = Scoring.getOddProbability( discriminant );			
+		prob = getOddProbability( discriminant );
 		
+	}
+
+	public double getOddProbability( double tod ){
+		return Math.exp(tod)/(1+Math.exp(tod));
 	}
 
 }

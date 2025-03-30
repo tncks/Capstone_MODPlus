@@ -82,7 +82,7 @@ public class Constants {
 	public static String		alkylationMethod;
 	
 	public static double		precursorAccuracy = 0.5;
-	public static double		precursorTolerance = 0.5;
+	public static double		precursorTolerance = 0.5; ////
 	public static double		PPMTolerance = 0;
 	public static double		fragmentTolerance = 0.6;
 	public static double		gapTolerance = 0.6;	
@@ -91,8 +91,8 @@ public class Constants {
 	
 	public static PTMDB 		variableModifications;
 	public static PTMDB 		fixedModifications;
-	public static double		minModifiedMass = -precursorTolerance;
-	public static double		maxModifiedMass = precursorTolerance;
+	public static double		minModifiedMass = -precursorTolerance; ////
+	public static double		maxModifiedMass = precursorTolerance;  ////
 	public static boolean		canBeModifiedOnFixedAA = false;
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean		isInModifiedRange(double v ){
@@ -184,23 +184,8 @@ public class Constants {
 
 	public static final	double	ANALYSIS_VERSION = 0.8;
 	
-	public static boolean isWithinTolerance(double calc, double obsv, double tol){
 
-		if( minNoOfC13 ==0 && maxNoOfC13 == 0 ) {
-            return !(Math.abs(calc - obsv) > tol);
-		}
-		else {
-			double tempError = obsv - calc;		
-			int isoerr = round( tempError / IsotopeSpace );		
-			if( isoerr < minNoOfC13 || maxNoOfC13 < isoerr ) return false;
-            return !(Math.abs(tempError - isoerr * IsotopeSpace) > precursorAccuracy);
-		}
-    }
-	public static boolean isWithinAccuracy(double err){		
-		if( gapAccuracy > 0.5 ) return true;
-		int isoerr = round( err / IsotopeSpace );
-        return !(Math.abs(err - isoerr * IsotopeSpace) > gapAccuracy);
-    }
+
 	
 	public static double PPMtoDalton(double mass, double ppm){	
 		return mass/1000000*ppm;

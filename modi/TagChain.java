@@ -46,7 +46,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 			return -1;
 	}
 
-	private void setMostAbundantBYPeakIntensity()
+	public void setMostAbundantBYPeakIntensity()
 	{
 		ArrayList<Peak> theoPeaks = new ArrayList<>();
 		for(SpecInterpretation t : this)
@@ -175,10 +175,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		return score;
 	}
 	
-	public static LinkedList<TagChain> buildTagChainList(Map.Entry<Peptide, LinkedList<MatchedTag>> tagPool){
-		initTagMerge(tagPool);
-		return enumTagChain(tagPool);
-	}
+
 	
 	public String getTagChainSequence()
 	{
@@ -189,314 +186,11 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		return output.toString();
 	}
 	
-	private static void initTagMerge( Map.Entry<Peptide, LinkedList<MatchedTag>> entry )
-	{
-		LinkedList<MatchedTag> tagList = entry.getValue();
-		tagList.sort(new SpecInterpretationComparator());
-		Spectrum ccspec = tagList.getFirst().getSourceSpectrum();
-	
-		if( tagList.getFirst().start != 0 ){
-			Peptide pept= entry.getKey();		
-			Tag gto= ccspec.getB2Tag(pept.subSequence(0, 2));
-			if( gto != null ){
-				MatchedTag b2mTag= MatchedTag.getMatchedB2Tag(gto, pept);
-				tagList.addFirst( b2mTag );
-			}		
-		}//*/	
 
-		int initSize  = tagList.size();
-		for(int i=0; i<initSize-1; i++)
-		{	
-			MatchedTag seed = tagList.get(i);
-			for(int j=i+1; j<initSize; j++)
-			{
-				MatchedTag tag = tagList.get(j);		
-				if( seed.getRelativePosition(tag) == RelativePosition.SEPERATED )
-					break;
-				
-				if( seed.getDirection() == tag.getDirection() && 
-						Constants.fEqual( seed.getOffset(), tag.getOffset() ) ){
-					MatchedTag temp= new MatchedTag(seed);
-					temp.extend(tag);
-					if( temp.size() != temp.sequence().size()+1 )
-						continue;
-					seed.extend(tag);	// extend seed from extendable TagList
-					tagList.remove(j);		
-					j--;
-					initSize--;
-					continue;
-				}
-				
-				if( seed.isComplementarySame(tag) ){
-					tagList.remove(j);		// remove seed from matchedTagList
-					j--;
-					initSize--;
-                }
-			}
-		}	
-		
-		int countOfLongTag= 0;
-		MatchedTag sLongTag= null;
-		for(int k=0; k<tagList.size(); k++){
-			tagList.get(k).setScore();
-			if( tagList.get(k).sequence().size() > 2 ){
-				countOfLongTag++;
-				sLongTag= tagList.get(k);
-			}
-		}
-		
-//		topept++;
-		if( tagList.size() > Constants.maxTagPerPept ){
-		//	maxHitperPept++;
-			tagList.sort(Collections.reverseOrder(new TagComparator()));
-			for(int k=Constants.maxTagPerPept; k<tagList.size(); k++){
-				tagList.remove(k--);
-			}
-			tagList.sort(new SpecInterpretationComparator());
-		}//*/
-		
-		if( countOfLongTag == 1 && tagList.size() < 4 ){
-			int rev= 0;
-			MatchedTag newTag= new MatchedTag(sLongTag);
-			if( sLongTag.getDirection() == IonDirection.B_DIRECTION ){				
-			//	if( !Constants.fEqual(sLongTag.getNTermOffset(), 0) )
-				{
-					rev++;
-					int s;
-					for(s=1; sLongTag.sequence().size()-rev > 2 ;s++){
-						if( ccspec.isConfidentPeak(sLongTag.get(s), 1) ) break;
-						rev++;
-					}
-					newTag.trim(newTag.getStart(), s);
-				}
-			//	if( !Constants.fEqual(sLongTag.getCTermOffset(), 0) )
-			
-				{
-					rev++;
-					int s;
-					for(s=1; sLongTag.sequence().size()-rev > 2 ;s++){
-						if( ccspec.isConfidentPeak(sLongTag.get(sLongTag.size()-s-1), 1) ) break;
-						rev++;
-					}
-					newTag.trim(newTag.getEnd(), s);
-				}
-			}
-			else{
-			//	if( !Constants.fEqual(sLongTag.getCTermOffset(), 0) )
-				{
-					rev++;
-					int s;
-					for(s=1; sLongTag.sequence().size()-rev > 2 ;s++){
-						if( ccspec.isConfidentPeak(sLongTag.get(s), 1) ) break;
-						rev++;
-					}
-					newTag.trim(newTag.getEnd(), s);
-				}
-			//	if( !Constants.fEqual(sLongTag.getNTermOffset(), 0) )
-				{
-					rev++;
-					int s;
-					for(s=1; sLongTag.sequence().size()-rev > 2 ;s++){
-						if( ccspec.isConfidentPeak(sLongTag.get(sLongTag.size()-s-1), 1) ) break;
-						rev++;
-					}
-					newTag.trim(newTag.getStart(), s);
-				}
-			}
-			if( rev > 0 ){
-				if( newTag.size() > 2 ) tagList.add(newTag);		
-			}
-		}
-	}
-	
-	private static LinkedList<TagChain> enumTagChain(Map.Entry<Peptide, LinkedList<MatchedTag>> entry)
-	{				
-		LinkedList<MatchedTag> tagList = entry.getValue();
-		tagList.sort(new SpecInterpretationComparator());	// sort matched tag list by start position
-				
-		LinkedList<TagChain> tagChainList = new LinkedList<>();
-		
-	//	System.out.println("TAGCHAIN.JAVA : " + entry.getKey()+ " " + tagList.size() );		
-		for( MatchedTag tag : tagList ) {	
-			TagChain t = new TagChain(entry.getKey(), tag.getSourceSpectrum());
-			t.add(tag);
-			tagChainList.add(t);
-	//		System.out.println(tag);
-		}//generate base tag_chain		
-	//	System.out.println(entry.getKey() + " " + tagList.size());	
-		
-		// tag chain enumeration
-		ArrayList<TagChain> addedTagChain = new ArrayList<>();
-		int start = 0, end = tagChainList.size(), addedCount;
-		
-		while(true)
-		{
-			ListIterator<TagChain> listIt = tagChainList.listIterator(start);
-			while(listIt.hasNext())
-			{
-				TagChain curTC = listIt.next();
-				if( !(curTC.last() instanceof MatchedTag seed) )
-					continue;
 
-                for( MatchedTag tag : tagList ) {
-					if( seed.compareTo(tag) > 0 || curTC.useSamePeak(tag) ) continue;	
-		
-					combineTagChains(addedTagChain, curTC, tag);
-				}
-			}
-			addedCount = addedTagChain.size();
-			tagChainList.addAll(addedTagChain);
-			addedTagChain.clear();
-			start = end;
-			end += addedCount;
-			if( addedCount == 0 ) break;
-		}
-		
-		// make gap for all tag chain list
-		ListIterator<TagChain> listIt = tagChainList.listIterator();
-		double topSCore = 0;
-		while( listIt.hasNext() ){
-			TagChain curTC = listIt.next();		
-			if( curTC.makeGap() ){ 
-				curTC.setTagChainScore(); 
-				if( curTC.score < 0 ) listIt.remove();
-				if( curTC.score > topSCore )
-					topSCore = curTC.score;
-			}
-			else{ listIt.remove(); }
-		}
-		
-		listIt = tagChainList.listIterator();
-		while( listIt.hasNext() ){
-			TagChain curTC = listIt.next();
-			if( curTC.score < topSCore * Constants.tagChainPruningRate ){
-				listIt.remove();				
-			}
-		}
-		
-		if( tagChainList.size() > Constants.maxTagChainPerPept ){
-			Collections.sort( tagChainList );
-			for(int i=Constants.maxTagChainPerPept; i<tagChainList.size(); i++)
-				tagChainList.remove(i--);
-		}
-		
-		return tagChainList;
-	}
-	
-	private static void  combineTagChains (ArrayList<TagChain> newTCList, TagChain baseTC, MatchedTag tag) {	
-		if( !(baseTC.last() instanceof MatchedTag seed) )
-			return;
-		
-		TagChain newTC = (TagChain)baseTC.clone();
 
-        RelativePosition ir= seed.getRelativePosition(tag);
-		if( ir == RelativePosition.SEPERATED ){			
-			newTC.add(tag);
-			newTCList.add(newTC);
-		}
-		
-		else if( ir == RelativePosition.ADJACENT ){
-			
-			if(	seed.size() < 3 )
-				return;
 
-			if(	seed.sequence().size() < Constants.minTagLengthPeptideShouldContain &&
-					tag.sequence().size()< Constants.minTagLengthPeptideShouldContain )
-				return;
-
-			newTC.remove(newTC.last());	
-
-			if( LinkableTags(seed, tag) ){			
-				if( seed.size() < tag.size() )
-					newTCList.add( extendTagChain(newTC, seed, tag.getTrimedTag( tag.getStart(), 1 )) );
-				else
-					newTCList.add( extendTagChain(newTC, seed.getTrimedTag( seed.getEnd(), 1 ), tag) );
-			}
-			else{				
-				if( tag.size() > 2 ) newTCList.add( extendTagChain(newTC, seed, tag.getTrimedTag( tag.getStart(), 1 )) );
-				newTCList.add( extendTagChain(newTC, seed.getTrimedTag( seed.getEnd(), 1 ), tag) );
-			}
-		}
-		
-		else if( ir == RelativePosition.OVERLAP ){ 
-
-			if( seed.sequence().size()< Constants.minTagLengthPeptideShouldContain &&
-						tag.sequence().size()< Constants.minTagLengthPeptideShouldContain )
-				return;
-
-			newTC.remove(newTC.last());	
-			
-			int overLabPart= seed.getEnd() - tag.getStart() + 1;
-				
-			newTCList.add( extendTagChain(newTC, seed.getTrimedTag( seed.getEnd(), overLabPart ),
-					tag.getTrimedTag( tag.getStart(), overLabPart )) );
-			if( LinkableTags(seed, tag) ){ return; }
-			
-			if( tag.sequence().size() > overLabPart+1 )
-				newTCList.add( extendTagChain(newTC, seed,
-					tag.getTrimedTag( tag.getStart(), overLabPart+1 )) );
-			if( seed.sequence().size() > overLabPart+1 )
-				newTCList.add( extendTagChain(newTC, seed.getTrimedTag( seed.getEnd(), overLabPart+1 ),
-					tag) );	
-		}
-		
-		else if( ir == RelativePosition.INCLUDING ){
-			
-			if(	seed.sequence().size() < Constants.minTagLengthPeptideShouldContain &&
-					tag.sequence().size() < Constants.minTagLengthPeptideShouldContain )
-				return;
-			if( Constants.fEqual( seed.getOffset(), tag.getOffset()) ) return;
-			if( !seed.isLikelyChild(tag) ) return;
-			
-			int rev= 0;
-			MatchedTag newTag;
-			if( seed.score > tag.score )
-				newTag= new MatchedTag(seed);
-			else
-				newTag= new MatchedTag(tag);
-
-			if( seed.getDirection() == IonDirection.B_DIRECTION ){
-				while( newTag.sequence().size() > 2 ) {
-					if( newTag.sourceSpectrum.isConfidentPeak(newTag.getFirst(), 1) ) break;
-					newTag.trim(newTag.getStart(), 1);
-					rev++;
-				}
-
-				while( newTag.sequence().size() > 2 ) {
-					if( newTag.sourceSpectrum.isConfidentPeak(newTag.getLast(), 1) ) break;
-					newTag.trim(newTag.getEnd(), 1);
-					rev++;
-				}
-			}
-			else {
-				while( newTag.sequence().size() > 2 ) {
-					if( newTag.sourceSpectrum.isConfidentPeak(newTag.getFirst(), 1) ) break;
-					newTag.trim(newTag.getEnd(), 1);
-					rev++;
-				}
-
-				while( newTag.sequence().size() > 2 ) {
-					if( newTag.sourceSpectrum.isConfidentPeak(newTag.getLast(), 1) ) break;
-					newTag.trim(newTag.getStart(), 1);
-					rev++;
-				}
-			}
-
-			if( rev > 0 ){									
-				newTC.remove(newTC.last());					
-				newTC.add(newTag);
-				newTCList.add(newTC);
-			}
-		}//INCLUDING*/
-	}
-	
-	private static boolean LinkableTags(MatchedTag one, MatchedTag two){
-		//ADJACENT tags citation
-		if( one.getDirection() == two.getDirection() ) return false;
-        return Constants.fEqual(one.getNTermOffset(), two.getNTermOffset());
-    }
-
-	private boolean useSamePeak(MatchedTag t) {
+	public boolean useSamePeak(MatchedTag t) {
 		for(SpecInterpretation element : this)
 		{
 			if(!(element instanceof MatchedTag)) continue;
@@ -522,12 +216,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		return super.remove(si);
 	}
 	
-	private static TagChain extendTagChain (TagChain baseTC, MatchedTag one, MatchedTag two){
-		TagChain newTC = (TagChain)baseTC.clone();
-		newTC.add(one);
-		newTC.add(two);		
-		return newTC;
-	}
+
 	
 	
 	public ArrayList<PTMCombination> getPTMCombination(){

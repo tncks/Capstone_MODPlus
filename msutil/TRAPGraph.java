@@ -131,7 +131,11 @@ public class TRAPGraph extends IonGraph {
 		else
 			discriminant= 0.1248*coverScore + 6.7925*ionCoverage + 5.5328*seqCoverage - 11.9468;//*/			
 		
-		prob = Scoring.getOddProbability( discriminant );
+		prob = getOddProbability( discriminant );
+	}
+
+	public double getOddProbability( double tod ){
+		return Math.exp(tod)/(1+Math.exp(tod));
 	}
 	
 }

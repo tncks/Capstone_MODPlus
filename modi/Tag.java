@@ -64,11 +64,7 @@ public class Tag extends ArrayList<Peak> {
 	public	double		getScore() { return tagScore; }		
 	public	Spectrum	getSourceSpectrum() { return sourceSpectrum; }
 	// t1 | t2 extendable : 1,  elas : 0
-	public	static	boolean		extendable(Tag t1, Tag t2)
-	{
-		boolean ex= t1.getLast() == t2.getFirst();
-        return ex;
-	}
+
 	public	boolean	contains(Tag t)
 	{
 		return this.sourceSpectrum == t.sourceSpectrum && this.containsAll(t) ;
@@ -79,18 +75,7 @@ public class Tag extends ArrayList<Peak> {
 	public	boolean	isNtermOnly() 	{ return nTermOnly; }
 	public	boolean	isCtermOnly()	{ return cTermOnly; }
 	
-	// last peak of this tag and first peak of t are same
-	public	static Tag merge(Tag t1, Tag t2)
-	{
-		assert(t1.getSourceSpectrum() == t2.getSourceSpectrum() && Tag.extendable(t1, t2));
-		
-		Tag merged = new Tag(t1);
-		merged.removeLast();
-		merged.addAll(t2);
-		merged.sequence().addAll(t2.sequence());
-		
-		return merged;
-	}
+
 	
 	public	String toString()
 	{		

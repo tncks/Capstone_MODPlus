@@ -1,18 +1,10 @@
 package modi;
 
 
+public class TagSourceBuilder {
 
-
-
-
-
-
-
-
-public class SpectrumAnalyzer2 {
-
-    private	SpectrumAnalyzer2() {}
-    public static TagPool buildTagPool( Spectrum sourceSpec ) {
+    public	TagSourceBuilder() {}
+    public TagPool buildTagPool( Spectrum sourceSpec ) {
         if( sourceSpec == null ) return null;
 
         for(int i=0; i<sourceSpec.size(); i++){

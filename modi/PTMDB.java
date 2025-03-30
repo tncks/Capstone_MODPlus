@@ -63,10 +63,8 @@ class GapKey {
 public class PTMDB extends ArrayList<PTM> {
 	private static ArrayList<PTM>[][]		PTMTable;
 	private final TreeMap<Integer, String> classifications = new TreeMap<>();
-	// Thread-local storage for per-thread recursion data
 	private static final ThreadLocal<RecursionContext> threadLocalContext =
 			ThreadLocal.withInitial(RecursionContext::new);
-	// Hash table for reusing results for Gaps already searched once
 	private final ConcurrentHashMap<GapKey, PTMSearchResult> resultCache =
 			new ConcurrentHashMap<>();
 
@@ -380,6 +378,17 @@ public class PTMDB extends ArrayList<PTM> {
 			}
 		}
 
+		public int round(double a){
+			if( a > 0 ) return (int)(a + 0.5);
+			else return (int)(a - 0.5);
+		}
+
+		public boolean isWithinAccuracy(double err){
+			if( Constants.gapAccuracy > 0.5 ) return true;
+			int isoerr = round( err / Constants.IsotopeSpace );
+			return !(Math.abs(err - isoerr * Constants.IsotopeSpace) > Constants.gapAccuracy);
+		}
+
 		/**
 		 * Recursive depth-first search for PTM combinations
 		 * This method is thread-safe because it uses thread-local data
@@ -391,7 +400,7 @@ public class PTMDB extends ArrayList<PTM> {
 				double error = Math.abs(mass - massDiff);
 
 				// Check if error is within tolerance
-				if (error <= Constants.gapTolerance && Constants.isWithinAccuracy(error)) {
+				if (error <= Constants.gapTolerance && isWithinAccuracy(error)) {
 					PTMRun run = new PTMRun();
 					// Add all PTM occurrences
 					for (int i = 0; i < seq.size(); i++) {
@@ -922,9 +931,11 @@ public class PTMDB extends ArrayList<PTM> {
 			
 			if( residueStr == null ) continue;
 			else if( residueStr.compareToIgnoreCase("N-term") == 0 ){
+				System.out.println("NTERM_FIX_MOD newly updated..");
 				Constants.NTERM_FIX_MOD += Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
 			}
 			else if( residueStr.compareToIgnoreCase("C-term") == 0 ){
+				System.out.println("CTERM_FIX_MOD newly updated..");
 				Constants.CTERM_FIX_MOD += Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
 			}
 			else residue = AminoAcid.getAminoAcid(residueStr.charAt(0));

@@ -8,9 +8,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import msutil.IonGraph;
-import msutil.PGraph;
-import msutil.Scoring;
+import msutil.*;
 
 import processedDB.ProtDatabase;
 
@@ -54,9 +52,18 @@ public class PtmMap {
 		
 		double[] ptms = new double[peptide.size()];
 		ptms[ptm.getID()] = delta;
-		IonGraph iG = Scoring.PeptideSpectrumMatch(peptide.toString(), ptms, pg );
+		IonGraph iG = PeptideSpectrumMatch(peptide.toString(), ptms, pg );
 		
 		history.add( new PSM(spec, peptide, ptm.getID(), delta, iG.getProb()) );
+	}
+
+	public IonGraph PeptideSpectrumMatch( String peptide, double[] ptms, PGraph graph ){//for moda final scoring
+		IonGraph iGraph;
+		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, graph);
+		else iGraph= new TRAPGraph(peptide, ptms, graph);
+
+		iGraph.evaluateMatchQuality(graph);
+		return iGraph;
 	}
 	
 	public void getPtmMap(String source, ProtDatabase ProtDB) throws IOException{		

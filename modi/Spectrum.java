@@ -323,7 +323,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		for(int i=0; i<selectedPeak.size()-1; i++)
 		{		
 			for(int j=i+1; j<selectedPeak.size(); j++){
-				double diff = Peak.getMassDifference(selectedPeak.get(i), selectedPeak.get(j));
+				double diff = Math.abs(selectedPeak.get(i).mass - selectedPeak.get(j).mass);
 				if( diff > maxGap )
 					break;
 				
@@ -340,7 +340,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		
 		for(int i=1; i<minTagLengthPeptideShouldContain; i++)
 		{
-			tempTags = TagPool.extendTags(tempTags, oneLengthTagPool);		
+			tempTags = extendTags(tempTags, oneLengthTagPool);
 			tags.addAll(tempTags);
 		}//*/		
 		
@@ -390,7 +390,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		for(int i=0; i<virtualDoublyPeak.size()-1; i++)
 		{
 			for(int j=i+1; j<virtualDoublyPeak.size(); j++){
-				double diff = Peak.getMassDifference(virtualDoublyPeak.get(i), virtualDoublyPeak.get(j));
+				double diff = Math.abs(virtualDoublyPeak.get(i).mass - virtualDoublyPeak.get(j).mass);
 				if( diff > maxGap )
 					break;
 				
@@ -406,11 +406,22 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		TagPool tempTags			= (TagPool)tags.clone();
 		
 		for(int i=1; i<minTagLengthPeptideShouldContain; i++) {
-			tempTags = TagPool.extendTags(tempTags, oneLengthTagPool);		
+			tempTags = extendTags(tempTags, oneLengthTagPool);
 			tags.addAll(tempTags);
 		}	
 
 		return tags;
+	}
+
+	public TagPool extendTags(TagPool target, TagPool source)
+	{
+		TagPool result = new TagPool();
+		for(int i=0; i<target.size(); i++)
+			for(int j=0; j<source.size(); j++)
+				if((target.get(i)).getLast() == (source.get(j)).getFirst())
+					result.add(merge(target.get(i), source.get(j)));
+
+		return result;
 	}
 	
 	public Tag getB2Tag(Sequence seq)
@@ -439,7 +450,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 				virtualPeak.setProbability(0);
 				Tag t1 = new Tag(selectedPeak.get(virB0), virtualPeak, seq.get(0), this);
 				Tag t2 = new Tag(virtualPeak, selectedPeak.get(j), seq.get(1), this);				
-				return Tag.merge(t1, t2);	
+				return merge(t1, t2);
 			}
 		}//*/
 		return null;
@@ -467,6 +478,19 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			index= R;
 		}	
 		return index;
+	}
+
+	// last peak of this tag and first peak of t are same
+	public Tag merge(Tag t1, Tag t2)
+	{
+		assert(t1.getSourceSpectrum() == t2.getSourceSpectrum() && (t1.getLast() == t2.getFirst()));
+
+		Tag merged = new Tag(t1);
+		merged.removeLast();
+		merged.addAll(t2);
+		merged.sequence().addAll(t2.sequence());
+
+		return merged;
 	}
 	
 	public double getMatchedPeak( double mz ){

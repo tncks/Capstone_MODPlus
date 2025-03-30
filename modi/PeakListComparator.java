@@ -111,11 +111,5 @@ public class PeakListComparator {
 	}
 	public	boolean				firstContainsSecond()	{ return secondOnly.isEmpty(); }
 
-	// merge second peak list to first peak list
-	public	static void		mergePeakList(ArrayList<Peak> firstPeakList, ArrayList<Peak> secondPeakList)
-	{
-		ArrayList<Peak> mergedPeakList = new PeakListComparator(firstPeakList, secondPeakList).getMergedPeaks();
-		firstPeakList.clear();
-		firstPeakList.addAll(mergedPeakList);
-	}
+
 }

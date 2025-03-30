@@ -116,9 +116,17 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 		end = Math.max(getEnd(), target.getEnd());
 
 		// Peak merge : should be optimized later
-		PeakListComparator.mergePeakList(this, target);
+		mergePeakList(this, target);
 		
 		this.tagSequence = matchedPeptide.subSequence(start, end+1);
+	}
+
+	// merge second peak list to first peak list
+	public void		mergePeakList(ArrayList<Peak> firstPeakList, ArrayList<Peak> secondPeakList)
+	{
+		ArrayList<Peak> mergedPeakList = new PeakListComparator(firstPeakList, secondPeakList).getMergedPeaks();
+		firstPeakList.clear();
+		firstPeakList.addAll(mergedPeakList);
 	}
 
 	public RelativePosition getRelativePosition(MatchedTag tag)
@@ -323,14 +331,5 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 	{
 		super(tag);
 	}
-	public static MatchedTag getMatchedB2Tag(Tag tag, Peptide pept)
-	{
-	    MatchedTag b2m = new MatchedTag(tag);
-	    b2m.matchedPeptide = pept;
-	    b2m.start = 0;
-	    b2m.end = 1;
-	    b2m.tagSequence = pept.subSequence(0, 2);
-		b2m.direction = IonDirection.B_DIRECTION;
-		return b2m;
-	}
+
 }
