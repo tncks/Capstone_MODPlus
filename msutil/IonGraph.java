@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import modi.Constants;
 import modi.PTM;
+import scaniter.ScanContext__;
 
 @SuppressWarnings("unused")
 public abstract class IonGraph extends ArrayList<IonNode> {
@@ -63,9 +64,9 @@ public abstract class IonGraph extends ArrayList<IonNode> {
 	protected abstract void construct();
 	public abstract void setScore( PGraph graph );
 	protected abstract void setSecondaryScore( PGraph graph );
-	public abstract void evaluateMatchQuality( PGraph graph );
+	public abstract void evaluateMatchQuality(PGraph graph, ScanContext__ context);
 	
-	public void setMatchCoverage(){
+	public void setMatchCoverage(ScanContext__ context){
 
 		int len = sequence.length()-1;
 		int[][] ionHits = new int[2][len];
@@ -116,7 +117,7 @@ public abstract class IonGraph extends ArrayList<IonNode> {
 			}
 		}
 		
-		int modAcid = ( modifiedMass < Constants.precursorTolerance )?  0 : (int)Math.ceil( modifiedMass / 110 );	
+		int modAcid = ( modifiedMass < context.getPrecursorTolerance() )?  0 : (int)Math.ceil( modifiedMass / 110 );
 		double penalty = modAcid + modifiedResd/2;
 		seqCoverage = (double)seqHit/(len+penalty);		
 		ionCoverage = (double)bbHit /(len+penalty);

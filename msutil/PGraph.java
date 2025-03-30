@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import modi.Constants;
+import scaniter.ScanContext__;
 
 @SuppressWarnings("unused")
 public class PGraph extends ArrayList<PNode>{
@@ -40,7 +41,7 @@ public class PGraph extends ArrayList<PNode>{
 		}
 	}
 	
-	public double correctMW( boolean dynamicCorrection ){ 
+	public double correctMW(boolean dynamicCorrection, ScanContext__ context){
 		
 		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) return obsvMW;				
 		if( Constants.precursorTolerance <= Constants.fragmentTolerance ) return obsvMW;	
@@ -49,7 +50,7 @@ public class PGraph extends ArrayList<PNode>{
 		if( charge > 2 ) prmTable= new PRMforHighCharge(this);
 		else prmTable= new PRM(this);//*/
 		
-		double error = prmTable.massCorrection( dynamicCorrection );
+		double error = prmTable.massCorrection( dynamicCorrection, context );
 		corrMW = obsvMW - error;			
 		return corrMW; 
 	}

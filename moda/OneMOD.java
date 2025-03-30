@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import modi.Constants;
 import modi.TagPool;
+import scaniter.ScanContext__;
 
 public class OneMOD {
 
@@ -19,24 +20,24 @@ public class OneMOD {
 
     public OneMOD(){}
 
-    public DPHeap getHeatedPeptides(StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection) {
+    public DPHeap getHeatedPeptides(StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection, ScanContext__ context) {
         bestOnlineScore.set(2);
         DPHeap annotation = null;
         final double MW = graph.getCorrectedMW();
 
         for (TagTrie stem : stemDB) {
-            CandidateContainer cpool = (new DBSearch()).construct_onemod_cpool(tPool, MW, stem);
+            CandidateContainer cpool = (new DBSearch()).construct_onemod_cpool(tPool, MW, stem, context);
 
             DPHeap sanno = null;
             if (dynamicPMCorrection)
-                sanno = run_dynamic_mass_mode(cpool, graph, stem);
-            else sanno = run_static_mass_mode(cpool, graph, stem);
+                sanno = run_dynamic_mass_mode(cpool, graph, stem,context);
+            else sanno = run_static_mass_mode(cpool, graph, stem,context);
 
             if (annotation == null) annotation = sanno;
             else annotation.insertAll(sanno);
         }
 
-        if (annotation.evaluate(graph) < 1) return null;
+        if (annotation.evaluate(graph, context) < 1) return null;
 
         return annotation;
     }
@@ -49,7 +50,7 @@ public class OneMOD {
 
 
 
-    public DPHeap run_static_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
+    public DPHeap run_static_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB, ScanContext__ context) {
         int poolsize = cpool.size();
         if (poolsize == 0) {
             DPHeap emptyList = new DPHeap();
@@ -68,14 +69,14 @@ public class OneMOD {
 
         final int len = processArray.length;
         for (int i = 0; i < len; i++) {
-            static_single_align(processArray[i], prmTable, ixPDB, topList);
+            static_single_align(processArray[i], prmTable, ixPDB, topList,context);
         }
 
         topList.setStemNo(ixPDB.getStemNo());
         return topList;
     }
 
-    public DPHeap run_dynamic_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB) {
+    public DPHeap run_dynamic_mass_mode(CandidateContainer cpool, PGraph graph, TagTrie ixPDB, ScanContext__ context) {
         int poolsize = cpool.size();
         if (poolsize == 0) {
             DPHeap emptyList = new DPHeap();
@@ -94,14 +95,14 @@ public class OneMOD {
 
         final int len = processArray.length;
         for (int i = 0; i < len; i++) {
-            dynamic_single_align(processArray[i], prmTable, ixPDB, topList);
+            dynamic_single_align(processArray[i], prmTable, ixPDB, topList,context);
         }
 
         topList.setStemNo(ixPDB.getStemNo());
         return topList;
     }
 
-    public void static_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
+    public void static_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList, ScanContext__ context) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
 
@@ -126,6 +127,8 @@ public class OneMOD {
                 int noOfET = ixPDB.getNTTOfPeptide(i, j, Constants.protease);
                 if (noOfET >= Constants.numberOfEnzymaticTermini) {
                     double massRange = delta + nTermDeletion + cTermDeletion;
+
+                    // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
                     if ((massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
                             Math.abs(massRange) < Constants.precursorTolerance) {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
@@ -150,7 +153,7 @@ public class OneMOD {
                         specMatrix[1][cpi - 1].mass += Constants.CTERM_FIX_MOD;
 
                         temp = dynamic_programming(peptide.substring(npi, cpi - 1), observedMass - pmzErr, rowMax, npi, cpi,
-                                specMatrix, prmTable, pmzErr);
+                                specMatrix, prmTable, pmzErr,context);
                         if (temp != null) {
                             temp.setProteinAndNTT(entry.getStart(), noOfET);
                             topList.insert(temp);
@@ -165,7 +168,7 @@ public class OneMOD {
         }
     }
 
-    public void dynamic_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList) {
+    public void dynamic_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList, ScanContext__ context) {
         double observedMass = prmTable.getPeptMass();
         String peptide = entry.getPeptide(ixPDB);
 
@@ -191,10 +194,11 @@ public class OneMOD {
                 int noOfET = ixPDB.getNTTOfPeptide(i, j, Constants.protease);
                 if (noOfET >= Constants.numberOfEnzymaticTermini) {
                     double massRange = delta + nTermDeletion + cTermDeletion;
+                    // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
                     if ((massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
                             Math.abs(massRange) < Constants.precursorTolerance) {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
-                        int intptm = Constants.round(massRange);
+                        int intptm = Constants.round(massRange);  // round ()
                         double pmzErr = massRange - ptm;
                         ptm += MODaConst.maxIsotopeError;
                         intptm += MODaConst.maxIntIsotopeError;
@@ -216,7 +220,7 @@ public class OneMOD {
                         specMatrix[1][cpi - 1].mass += Constants.CTERM_FIX_MOD;
 
                         temp = DPwithMassCorrection(peptide.substring(npi, cpi - 1), observedMass - pmzErr, rowMax, npi, cpi,
-                                specMatrix, prmTable, pmzErr);
+                                specMatrix, prmTable, pmzErr,context);
                         temp.setProteinAndNTT(entry.getStart(), noOfET);
                         topList.insert(temp);
                     }
@@ -230,14 +234,14 @@ public class OneMOD {
     }
 
     public DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                                  MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
+                                                  MatCell[][] specMatrix, PRM prmTable, double pmzErr, ScanContext__ context) {
 
         DPPeptide best = new DPPeptide(), temp = null;
 
         double massCorrection = MODaConst.maxIsotopeError;
         for (int i = 0; i < MODaConst.isotopePointsToBeCorrected; i++) {
             temp = dynamic_programming(peptide, obsMass + massCorrection, rowMax, smStart, smEnd,
-                    specMatrix, prmTable, pmzErr - massCorrection);
+                    specMatrix, prmTable, pmzErr - massCorrection,context);
             if (temp != null && temp.score > best.score) {
                 best = temp;
             }
@@ -253,9 +257,10 @@ public class OneMOD {
     }
 
     public DPPeptide dynamic_programming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
-                                                 MatCell[][] specMatrix, PRM prmTable, double pmzErr) {
+                                                 MatCell[][] specMatrix, PRM prmTable, double pmzErr, ScanContext__ context) {
 
         int colMax = smEnd - smStart, endingTag = 1;
+        // context.getMaxModifiedMass()
         if (specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass) return null;
 
         double upperLimit = obsMass + Constants.fragmentTolerance;

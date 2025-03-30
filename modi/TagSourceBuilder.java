@@ -1,10 +1,12 @@
 package modi;
 
 
+import scaniter.ScanContext__;
+
 public class TagSourceBuilder {
 
     public	TagSourceBuilder() {}
-    public TagPool buildTagPool( Spectrum sourceSpec ) {
+    public TagPool buildTagPool( Spectrum sourceSpec, ScanContext__ context ) {
         if( sourceSpec == null ) return null;
 
         for(int i=0; i<sourceSpec.size(); i++){
@@ -19,9 +21,9 @@ public class TagSourceBuilder {
         sourceSpec.normalizeIntensityLocally();
 
         int extra = ( sourceSpec.getCharge() > 2 && Constants.INSTRUMENT_TYPE != Constants.msms_type.QTOF )? 2 : 0;
-        sourceSpec.peakSelection(Constants.selectionWindowSize, Constants.minNumOfPeaksInWindow+extra );
+        sourceSpec.peakSelection(Constants.selectionWindowSize, Constants.minNumOfPeaksInWindow+extra, context.getMassToleranceForDenovo() );
 
-        return sourceSpec.generateTags(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain, Constants.massToleranceForDenovo);
+        return sourceSpec.generateTags(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain, context.getMassToleranceForDenovo());
     }
 
 

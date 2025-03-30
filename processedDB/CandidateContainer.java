@@ -1,5 +1,7 @@
 package processedDB;
 
+import scaniter.ScanContext__;
+
 import java.util.Collections;
 import java.util.LinkedList;
 
@@ -11,7 +13,7 @@ public class CandidateContainer {
 	public int size() { return size; }
 	public MODPeptide[] getList() { return modlist; }
 	
-	public CandidateContainer( LinkedList<TagPeptide> hmap, TagTrie trie ){ //multi-mod
+	public CandidateContainer(LinkedList<TagPeptide> hmap, TagTrie trie, ScanContext__ context){ //multi-mod
 		hmap.sort(new TagPeptComparator());
 
 		size  = 0;
@@ -24,7 +26,7 @@ public class CandidateContainer {
 			hmap.removeFirst();
 			while(!hmap.isEmpty()){
 				TagPeptide entry = hmap.getFirst();	
-				if( !ctp.extend(parent, entry, trie) ){
+				if( !ctp.extend(parent, entry, trie, context) ){
 					ctp.arrangeTags();
 					modlist[size++] = ctp;
 					ctp = new ChainTagPeptide(entry.pStart, entry.pEnd, entry.mTag);

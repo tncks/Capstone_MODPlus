@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import modi.Constants;
+import scaniter.ScanContext__;
 
 public class ChainTagPeptide extends MODPeptide {
 	
-	private static final double	a = ( Constants.maxModifiedMass < 0 )?  Constants.gapTolerance : Constants.maxModifiedMass+Constants.gapTolerance;
-	private static final double	b = ( Constants.minModifiedMass > 0 )? -Constants.gapTolerance : Constants.minModifiedMass-Constants.gapTolerance;
-	private static final double	shiftWindow = (a - b);
+
 	
 	final ArrayList<SequenceTag> mTags;
 
@@ -21,11 +20,14 @@ public class ChainTagPeptide extends MODPeptide {
 	
 	public ArrayList<SequenceTag> getMatchedTags( ){ return mTags; }
 
-	public boolean extend( TagPeptide merged, TagPeptide toMerge, TagTrie trie ){ //multi-mod
+	public boolean extend(TagPeptide merged, TagPeptide toMerge, TagTrie trie, ScanContext__ context){ //multi-mod
 		
 		if( merged.pStart <= toMerge.pStart && toMerge.pStart < merged.pEnd )
 		{
-			double offset = msutil.MSMass.getPepMass( trie.getPeptide(merged.pStart, toMerge.pStart) );			
+			double offset = msutil.MSMass.getPepMass( trie.getPeptide(merged.pStart, toMerge.pStart) );
+			double	a = (context.getMaxModifiedMass() < 0)?  context.getGapTolerance() : context.getMaxModifiedMass() + context.getGapTolerance();
+			double	b = (context.getMinModifiedMass() > 0)? -context.getGapTolerance() : context.getMinModifiedMass() - context.getGapTolerance();
+			double	shiftWindow = a - b;
 			if( offset <= shiftWindow && mTags.size() < 100 ) {
 				this.pLeft = Math.max( this.pLeft,  toMerge.pLeft );
 				this.pRight= Math.min( this.pRight, toMerge.pRight );

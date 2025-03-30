@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import modi.Constants;
 import msutil.*;
+import scaniter.ScanContext__;
 
 public class DPHeap extends LinkedList<DPPeptide> {
 
@@ -69,7 +70,7 @@ public class DPHeap extends LinkedList<DPPeptide> {
     }
 
 
-    public int evaluate(PGraph graph) { //for moda
+    public int evaluate(PGraph graph, ScanContext__ context) { //for moda
         int i, maxScore = 0;
         for (i = 0; i < this.size(); i++) {
             if (this.get(i).score < 1) {
@@ -77,7 +78,7 @@ public class DPHeap extends LinkedList<DPPeptide> {
                 i--;
                 continue;
             }
-            this.get(i).evaluatePSM(graph);
+            this.get(i).evaluatePSM(graph, context);
             if (maxScore < this.get(i).score) maxScore = this.get(i).score;
         }
 

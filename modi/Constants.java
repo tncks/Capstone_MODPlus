@@ -15,7 +15,7 @@ public class Constants {
 	public static String runTitle;
 	
 	public static String 			SPECTRUM_LOCAL_PATH;
-	public static String 			SPECTRUM_FILE_NAME;
+	//public static String 			SPECTRUM_FILE_NAME;
 	public static String 			INSTRUMENT_NAME = "TRAP";
 	
 	public static msms_type	 		INSTRUMENT_TYPE = msms_type.TRAP; //TOF(0), LOW_TRAP(1), HIGH_TRAP(2)
@@ -35,12 +35,12 @@ public class Constants {
 		TRAP,
 	}
 	
-	public enum instrument_resolution {
-	}
+	/*public enum instrument_resolution {
+	}*/
 	
-	public enum experimental_protocol {
+	/*public enum experimental_protocol {
 		iTRAQ,		
-	}
+	}*/
 	
 	public static String 		PROTEIN_DB_LOCAL_PATH;
 	public static final String 		DECOY_LABEL="dec_";
@@ -74,8 +74,8 @@ public class Constants {
 	public static int			numberOfEnzymaticTermini = 2;
 	public static int			missCleavages = 2;
 	
-	public static int			minNoOfC13 = 0;
-	public static int			maxNoOfC13 = 0;
+	public static  int			minNoOfC13 = 0;
+	public static  int			maxNoOfC13 = 0;
 	public static int			rangeForIsotopeIncrement = 0;
 	
 	public static double		alkylatedToCys = 0;
@@ -172,17 +172,17 @@ public class Constants {
 		0.645635, 0.478968, 0.336111, 0.211111, 0.100000};
 	
 	public static final double[] coEfft= {0.3159, -34.6288, 1.3209, -8.7609, 0., - 5.0206};
-	public static double getMODScore( double a, double b, double c, double d, double e){
+	/*public static double getMODScore( double a, double b, double c, double d, double e){
 		return coEfft[0]*a + coEfft[1]*b + coEfft[2]*c + coEfft[3]*d + coEfft[4]*e + coEfft[5]; 		
-	}
+	}*/
 	
 	public static String	getString(double value){
 		return new DecimalFormat("#.###").format(value);
 	}
 
-	public static double	PTM_ADD_PENALTY = 0.2;
+	//public static double	PTM_ADD_PENALTY = 0.2;
 
-	public static final	double	ANALYSIS_VERSION = 0.8;
+	//public static final	double	ANALYSIS_VERSION = 0.8;
 	
 
 

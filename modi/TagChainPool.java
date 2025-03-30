@@ -3,6 +3,7 @@ package modi;
 import java.util.*;
 
 import msutil.*;
+import scaniter.ScanContext__;
 
 public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 
@@ -421,36 +422,35 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 		else return (int)(a - 0.5);
 	}
 
-	public boolean isWithinTolerance(double calc, double obsv, double tol){
-//		System.out.println("isWithin: " + calc + " " + obsv + " " + tol + "...");
-//		System.out.println(Thread.currentThread().threadId());
-		if( Constants.minNoOfC13 == 0 && Constants.maxNoOfC13 == 0 ) {
-//			System.out.println("finish["+Thread.currentThread().threadId()+"]");
+	public boolean isWithinTolerance(double calc, double obsv, double tol, ScanContext__ context){
+
+		if( Constants.minNoOfC13 == 0 && context.getMaxNoOfC13() == 0 ) {
+
 			return !(Math.abs(calc - obsv) > tol);
 		}
 		else {
 			double tempError = obsv - calc;
-			int isoerr = round( tempError / Constants.IsotopeSpace );
-//			System.out.println("finish["+Thread.currentThread().threadId()+"]");
-			if( isoerr < Constants.minNoOfC13 || Constants.maxNoOfC13 < isoerr ) return false;
-			return !(Math.abs(tempError - isoerr * Constants.IsotopeSpace) > Constants.precursorAccuracy);
+			int isoerr = round( tempError / context.getIsotopeSpace() );
+
+			if( isoerr < Constants.minNoOfC13 || context.getMaxNoOfC13() < isoerr ) return false;
+			return !(Math.abs(tempError - isoerr * context.getIsotopeSpace()) > context.getPrecursorAccuracy());
 		}
 	}
 
 
-	public int getModEyeRankScore( String peptide, double[] ptms, PGraph graph ){	//for modeye preliminary ranking
+	public int getModEyeRankScore( String peptide, double[] ptms, PGraph graph, ScanContext__ context ){	//for modeye preliminary ranking
 		IonGraph iGraph;
 		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, graph);
 		else iGraph= new TRAPGraph(peptide, ptms, graph);
 
-		if( !isWithinTolerance(iGraph.getCalculatedMW(), graph.getObservedMW(), Constants.precursorTolerance) )
+		if( !isWithinTolerance(iGraph.getCalculatedMW(), graph.getObservedMW(), context.getPrecursorTolerance(), context) )
 			return -1;
 
 		iGraph.setScore(graph);
 		return iGraph.getRankScore();
 	}
-	
-	public ArrayList<AnsPeptide> getAnswerPeptides( PGraph graph ){		
+
+	public ArrayList<AnsPeptide> getAnswerPeptides(PGraph graph, ScanContext__ context){
 		AnsHeap answerPepts = new AnsHeap();
 		
 		Iterator<Map.Entry<Peptide, LinkedList<TagChain>>> entries = this.entrySet().iterator();
@@ -469,14 +469,14 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 			while( iter.hasNext() ){
 				PTMCombination p = iter.next();
 	
-				int s = getModEyeRankScore(pept, p.ptms, graph);
+				int s = getModEyeRankScore(pept, p.ptms, graph, context);
 				if( s < 0 ) continue;
 				AnsPeptide candidate = new AnsPeptide(entry.getKey(), p.ptmComb, p.ptms, p.ptmList, s);
 				answerPepts.add( candidate ); 
 			}
 		}
 		
-		return answerPepts.getFinalList(graph);
+		return answerPepts.getFinalList(graph, context);
 	}
 	
 }

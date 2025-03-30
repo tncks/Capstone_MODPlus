@@ -1,6 +1,7 @@
 package moda;
 
 import java.util.Comparator;
+import scaniter.ScanContext__;
 
 import msutil.*;
 
@@ -43,8 +44,8 @@ public class DPPeptide implements Comparable<DPPeptide> {
 		NTT = n;
 	}
 	
-	public void evaluatePSM(PGraph pg) {
-		IonGraph iG = PeptideSpectrumMatch( peptide, ptms, pg );
+	public void evaluatePSM(PGraph pg, ScanContext__ context) {
+		IonGraph iG = PeptideSpectrumMatch( peptide, ptms, pg, context );
 		prob = iG.getProb();
 		score = iG.getRankScore();
 		peptMass = iG.getCalculatedMW();
@@ -52,12 +53,12 @@ public class DPPeptide implements Comparable<DPPeptide> {
 		noMods = iG.getModifiedResd();
 	}
 
-	public IonGraph PeptideSpectrumMatch( String peptide, double[] ptms, PGraph graph ){//for moda final scoring
+	public IonGraph PeptideSpectrumMatch( String peptide, double[] ptms, PGraph graph, ScanContext__ context ){//for moda final scoring
 		IonGraph iGraph;
 		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, graph);
 		else iGraph= new TRAPGraph(peptide, ptms, graph);
 
-		iGraph.evaluateMatchQuality(graph);
+		iGraph.evaluateMatchQuality(graph, context);
 		return iGraph;
 	}
 	

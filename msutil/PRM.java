@@ -1,6 +1,7 @@
 package msutil;
 
 import modi.Constants;
+import scaniter.ScanContext__;
 
 
 @SuppressWarnings("unused")
@@ -54,18 +55,18 @@ public class PRM {
 		return bTable[(int)(mass*accuracy)] + yTable[(int)((mass+delta)*accuracy)];
 	}
 
-	public double massCorrection( boolean dynamicCorrection )
+	public double massCorrection(boolean dynamicCorrection, ScanContext__ context)
 	{
 		int slack = 56*accuracy;
 		int size = bTable.length - slack;
 	
 		int startpoint;
-		int endpoint	= (int)(Constants.precursorTolerance*accuracy);
-		if( Constants.maxNoOfC13 == 0 ){
+		int endpoint	= (int)(context.getPrecursorTolerance() * accuracy);
+		if( context.getMaxNoOfC13() == 0 ){
 			startpoint	= 	-endpoint;			
 		}//*/
 		else{
-			startpoint	= (int)((Constants.minNoOfC13-Constants.precursorAccuracy)*accuracy);
+			startpoint	= (int)((Constants.minNoOfC13 - context.getPrecursorAccuracy())*accuracy);
 		}
 		
 		if( slack < Math.abs(startpoint) || slack < Math.abs(endpoint) ) return 0;

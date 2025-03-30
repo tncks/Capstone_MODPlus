@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import msutil.PGraph;
 import msutil.PNode;
+import scaniter.ScanContext__;
 
 public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 
@@ -90,11 +91,11 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		return lMax;
 	}
 
-	public PGraph getPeakGraph(){ //MOD SERIES
+	public PGraph getPeakGraph(ScanContext__ context){ //MOD SERIES
 		
 		int binSize= 100, considered= 10;
 		double minimumCut= bpIntensity*0.001;
-		double precursoeRange= Constants.precursorTolerance/this.charge + Constants.fragmentTolerance;
+		double precursoeRange= context.getPrecursorTolerance()/this.charge + Constants.fragmentTolerance;
 		
 		PGraph graph = new PGraph(this.observedMW, charge);
 		
@@ -240,11 +241,11 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		return buffer.toString();
 	}
 	
-	public int peakSelection (double selectionWindowSize, int numOfPeaksInWindow ){
+	public int peakSelection (double selectionWindowSize, int numOfPeaksInWindow, double denovoFromContext ){
 		int globalSelectedSize = (int) (this.observedMW / selectionWindowSize * numOfPeaksInWindow);
-		return peakSelection(globalSelectedSize, selectionWindowSize, numOfPeaksInWindow);
+		return peakSelection(globalSelectedSize, selectionWindowSize, numOfPeaksInWindow, denovoFromContext);
 	}
-	public int peakSelection (int globalSelectedSize, double selectionWindowSize, int numOfPeaksInWindow ){
+	public int peakSelection (int globalSelectedSize, double selectionWindowSize, int numOfPeaksInWindow, double denovoFromContext ){
 		assert(this.checkSorted());
 		if(globalSelectedSize > this.size())
 			globalSelectedSize = this.size();
@@ -301,7 +302,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		selected.add(new Peak(-1, correctedMW+Constants.Proton-Constants.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_Y_ION_ONLY));
 
 		selectedPeak = new ArrayList<>(selected);
-		setScoreOfSelectedPeaks(selectedPeak, 1, Constants.massToleranceForDenovo);
+		setScoreOfSelectedPeaks(selectedPeak, 1, denovoFromContext, denovoFromContext);
 
         return selectedPeak.size();
 	}	
@@ -313,11 +314,11 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			System.out.println(peak);
 	}
 	
-	public	TagPool	generateTags( int minTagLength, int minTagLengthPeptideShouldContain, double massTolerance ) {// by NA
+	public	TagPool	generateTags( int minTagLength, int minTagLengthPeptideShouldContain, double denovoFromContext ) {// by NA
 		// selectedPeak array should be sorted before generating Tags
 		assert(selectedPeak != null);
-	//	double maxGap = AminoAcid.getAminoAcid('W').getMonoMass() + massTolerance; // Mass of 'W' is biggest
-		double maxGap = AminoAcid.getMaxMonoMass() + massTolerance; // Mass of 'W' is biggest
+	//	double maxGap = AminoAcid.getAminoAcid('W').getMonoMass() + denovoFromContext; // Mass of 'W' is biggest
+		double maxGap = AminoAcid.getMaxMonoMass() + denovoFromContext; // Mass of 'W' is biggest
 		
 		TagPool tags = new TagPool();		
 		for(int i=0; i<selectedPeak.size()-1; i++)
@@ -328,7 +329,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 					break;
 				
 				// one length tag
-				ArrayList<AminoAcid> codeList = AminoAcid.getCode( diff, massTolerance );//massTolerance);
+				ArrayList<AminoAcid> codeList = AminoAcid.getCode( diff, denovoFromContext );//denovoFromContext);
 				for(AminoAcid code : codeList) {
 					tags.add(new Tag(selectedPeak.get(i), selectedPeak.get(j), code, this));
 				}							
@@ -345,7 +346,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		}//*/		
 		
 		if( this.charge > 2 ){
-			tags.addAll( this.generateDoublyTags(minTagLength, minTagLengthPeptideShouldContain, massTolerance*2) );			
+			tags.addAll( this.generateDoublyTags(minTagLength, minTagLengthPeptideShouldContain, denovoFromContext*2, denovoFromContext) );
 		}//*/
 		
 		tags.setTagScores();
@@ -354,7 +355,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
         return tags;
 	}
 	
-	private	TagPool	generateDoublyTags(int minTagLength, int minTagLengthPeptideShouldContain, double massTolerance)
+	private	TagPool	generateDoublyTags(int minTagLength, int minTagLengthPeptideShouldContain, double massToleranceDD, double denovoFromContext)
 	{// by NA
 		// selectedPeak array should be sorted before generating Tags
 		assert(selectedPeak != null);
@@ -382,10 +383,10 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			}
 		}
 		Collections.sort( virtualDoublyPeak );
-		setScoreOfSelectedPeaks(virtualDoublyPeak, 2, massTolerance);
+		setScoreOfSelectedPeaks(virtualDoublyPeak, 2, massToleranceDD, denovoFromContext);
 		
 	//	double maxGap = AminoAcid.getAminoAcid('W').getMass() + massTolerance; // Mass of 'W' is biggest
-		double maxGap = AminoAcid.getMaxMonoMass() + massTolerance; // Mass of 'W' is biggest
+		double maxGap = AminoAcid.getMaxMonoMass() + massToleranceDD; // Mass of 'W' is biggest
 		TagPool tags = new TagPool();		
 		for(int i=0; i<virtualDoublyPeak.size()-1; i++)
 		{
@@ -395,7 +396,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 					break;
 				
 				// one length tag
-				ArrayList<AminoAcid> codeList = AminoAcid.getCode(diff, massTolerance);
+				ArrayList<AminoAcid> codeList = AminoAcid.getCode(diff, massToleranceDD);
 				for(AminoAcid code : codeList){//public Peak(int index, double mass, double intensity, int charge, PeakProperty property)				
 					tags.add(new Tag(virtualDoublyPeak.get(i), virtualDoublyPeak.get(j), code, this));
 				}							
@@ -583,7 +584,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		return buffer.toString();
 }
 	
-	private void setScoreOfSelectedPeaks( ArrayList<Peak> selected, int assumedCS, double tolerance )
+	private void setScoreOfSelectedPeaks( ArrayList<Peak> selected, int assumedCS, double tolerance, double denovoFromContext )
 	{
 		double isotopeDelta = Constants.IsotopeSpace, NH3Delta = Constants.NH3, H2ODelta = Constants.H2O;
 		for( int node=0; node<selected.size(); node++){
@@ -610,7 +611,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			double okmax = 0;
 			targetmz= ionMZ-isotopeDelta;
 			for(int i=node-1; i>-1; i--){
-				if( selected.get(i).getMass() < targetmz-tolerance ) break;			
+				if( selected.get(i).getMass() < targetmz-tolerance ) break;
 				else if( Math.abs(selected.get(i).getMass()-targetmz) < tolerance ){
 					if( selected.get(i).getIntensity() > okmax ) {
 						okmax = selected.get(i).getIntensity();
@@ -633,8 +634,8 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 				int H = -1;
 				double imax = 0;				
 				for(int i=ISO; i<selected.size(); i++){
-					if( selected.get(i).getMass() > targetmz+Constants.massToleranceForDenovo ) break;			
-					else if( Math.abs(selected.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+					if( selected.get(i).getMass() > targetmz+denovoFromContext ) break;
+					else if( Math.abs(selected.get(i).getMass()-targetmz) < denovoFromContext ){
 						if( selected.get(i).getIntensity() > imax ) {
 							imax = selected.get(i).getIntensity();
 							H = i;
@@ -656,7 +657,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			double lossmax=0, lossmz=0;
 			targetmz= ionMZ-H2ODelta;
 			for(int i=node-1; i>-1; i--){
-				if( selected.get(i).getMass() < targetmz-tolerance ) break;			
+				if( selected.get(i).getMass() < targetmz-tolerance ) break;
 				else if( Math.abs(selected.get(i).getMass()-(ionMZ-NH3Delta)) < tolerance ){
 					if( selected.get(i).getIntensity() > lossmax ) {
 						lossmax = selected.get(i).getIntensity();
@@ -678,7 +679,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 				double nsmax = 0;
 				targetmz= lossmz+isotopeDelta;
 				for(int i=NLOSS+1; i<selected.size(); i++){
-					if( selected.get(i).getMass() > targetmz+tolerance ) break;			
+					if( selected.get(i).getMass() > targetmz+tolerance ) break;
 					else if( Math.abs(selected.get(i).getMass()-targetmz) < tolerance ){
 						if( selected.get(i).getIntensity() > nsmax ) {
 							nsmax = selected.get(i).getIntensity();

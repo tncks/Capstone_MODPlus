@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import msutil.PGraph;
+import scaniter.ScanContext__;
 
 public class AnsHeap {
 	static final int Capacity = 100; // max heap capacity
@@ -48,10 +49,10 @@ public class AnsHeap {
 		Elements[ i ] = LastElement;
 	}
 
-	public ArrayList<AnsPeptide> getFinalList(PGraph graph) {
+	public ArrayList<AnsPeptide> getFinalList(PGraph graph, ScanContext__ context) {
 		ArrayList<AnsPeptide> tempList = new ArrayList<>();
 		for( int i=1; i<= Size; i++){
-			Elements[i].evaluatePSM(graph);	
+			Elements[i].evaluatePSM(graph, context);
 			tempList.add(Elements[i]);
 		}
 		Collections.sort( tempList );

@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import modi.Constants;
 import modi.PTM;
+import scaniter.ScanContext__;
 
 public class TRAPGraph extends IonGraph {
 		
@@ -119,10 +120,10 @@ public class TRAPGraph extends IonGraph {
 		coverScore = (int)Math.round(EPS-UnEPS);
 	}
 	
-	public void evaluateMatchQuality(PGraph graph){ 
+	public void evaluateMatchQuality(PGraph graph, ScanContext__ context){
 	
 		setSecondaryScore( graph );
-		setMatchCoverage();
+		setMatchCoverage(context);
 	
 		double discriminant;
 		
