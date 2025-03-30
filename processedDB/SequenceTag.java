@@ -1,6 +1,7 @@
 package processedDB;
 
-import modi.Constants;
+
+import scaniter.ScanContext__;
 
 public class SequenceTag implements Comparable<SequenceTag> {
 	private double 	nGap;
@@ -25,15 +26,15 @@ public class SequenceTag implements Comparable<SequenceTag> {
 		mEnd += offset;
 	}
 	
-	public boolean extendable(SequenceTag x){
+	public boolean extendable(SequenceTag x, ScanContext__ context){
 		if( this.mType == x.mType ) {
-            return Math.abs(this.nGap - x.nGap) <= Constants.massToleranceForDenovo;
+            return Math.abs(this.nGap - x.nGap) <= context.getMassToleranceForDenovo();
 		}
 		return false;
 	}
 	
-	public boolean extend(SequenceTag x){
-		if( extendable(x) ){
+	public boolean extend(SequenceTag x, ScanContext__ context){
+		if( extendable(x, context) ){
 			this.mEnd= (short)Math.max( this.mEnd, x.mEnd );
 			return true;
 		}	

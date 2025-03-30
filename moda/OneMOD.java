@@ -128,11 +128,11 @@ public class OneMOD {
                 if (noOfET >= Constants.numberOfEnzymaticTermini) {
                     double massRange = delta + nTermDeletion + cTermDeletion;
 
-                    // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
-                    if ((massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Constants.precursorTolerance) {
+                    //
+                    if ((massRange < context.getMaxModifiedMass() && massRange > context.getMinModifiedMass()) ||
+                            Math.abs(massRange) < context.getPrecursorTolerance()) {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
-                        int intptm = Constants.round(massRange);
+                        int intptm = round(massRange);
                         double pmzErr = massRange - ptm;
 
                         specMatrix[0][npi].setMass(0, 0., 0);
@@ -194,11 +194,11 @@ public class OneMOD {
                 int noOfET = ixPDB.getNTTOfPeptide(i, j, Constants.protease);
                 if (noOfET >= Constants.numberOfEnzymaticTermini) {
                     double massRange = delta + nTermDeletion + cTermDeletion;
-                    // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
-                    if ((massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Constants.precursorTolerance) {
+                    //
+                    if ((massRange < context.getMaxModifiedMass() && massRange > context.getMinModifiedMass()) ||
+                            Math.abs(massRange) < context.getPrecursorTolerance()) {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
-                        int intptm = Constants.round(massRange);  // round ()
+                        int intptm = round(massRange);  // round ()
                         double pmzErr = massRange - ptm;
                         ptm += MODaConst.maxIsotopeError;
                         intptm += MODaConst.maxIntIsotopeError;
@@ -260,8 +260,8 @@ public class OneMOD {
                                                  MatCell[][] specMatrix, PRM prmTable, double pmzErr, ScanContext__ context) {
 
         int colMax = smEnd - smStart, endingTag = 1;
-        // context.getMaxModifiedMass()
-        if (specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass) return null;
+        //
+        if (specMatrix[endingTag][smStart].nominalDelta > context.getMaxModifiedMass()) return null;
 
         double upperLimit = obsMass + Constants.fragmentTolerance;
         specMatrix[0][smStart].isAAJump = 1;
@@ -331,6 +331,11 @@ public class OneMOD {
         }
         if (idScore > bestOnlineScore.get()) bestOnlineScore.set((int) idScore);
         return new DPPeptide(peptide, (int) idScore, ptms, smStart);
+    }
+
+    public int round(double a){
+        if( a > 0 ) return (int)(a + 0.5);
+        else return (int)(a - 0.5);
     }
 
 }

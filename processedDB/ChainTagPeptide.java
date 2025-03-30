@@ -3,7 +3,7 @@ package processedDB;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import modi.Constants;
+
 import scaniter.ScanContext__;
 
 public class ChainTagPeptide extends MODPeptide {
@@ -47,13 +47,13 @@ public class ChainTagPeptide extends MODPeptide {
 		return msutil.MSMass.getPepMass( trie.getPeptide(this.pStart, xp.pStart) );		
 	}
 	
-	public void arrangeTags(){
+	public void arrangeTags(ScanContext__ context){
 		Collections.sort( mTags );
 		int initSize = mTags.size();
 		for(int i=0; i<initSize-1; i++){					
 			for(int j=i+1; j<initSize; j++){
 				if( mTags.get(i).getEnd()+1 < mTags.get(j).getStart() ) break;
-				if( mTags.get(i).extend( mTags.get(j) ) ){
+				if( mTags.get(i).extend( mTags.get(j), context ) ){
 					mTags.remove(j);		
 					j--;
 					initSize--;

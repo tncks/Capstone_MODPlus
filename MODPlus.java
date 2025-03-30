@@ -1,28 +1,30 @@
-
-import java.io.*;
-import java.text.DateFormat;
-import java.util.*;
-import java.util.concurrent.*;
-
-
-import modi.*;
-import moda.OneMOD;
-import moda.MultiMOD;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-
 import moda.DPHeap;
+import moda.MultiMOD;
+import moda.OneMOD;
+import modi.*;
 import msutil.IsobaricTag;
 import msutil.MSMass;
 import msutil.PGraph;
 import msutil.ProtCutter;
-import processedDB.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+import processedDB.HeatedDB;
+import processedDB.PeptideMatchToProtein;
+import processedDB.StemTagTrie;
+import processedDB.TagTrie;
 import scaniter.MSMScan;
-
 import scaniter.ScanContext__;
 import scaniter.ScanIterator;
+
+import java.io.*;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.*;
 
 
 public class MODPlus {
@@ -371,13 +373,14 @@ public class MODPlus {
         System.out.println();
 
         int NUM_THREADS = Runtime.getRuntime().availableProcessors();
+        // 18_000 <- replace by new Queue <> capacity <- scaniter.size() + 2.  int capacity = scaniter.size()+2;
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 NUM_THREADS,                 // 코어 스레드 수
                 NUM_THREADS,                 // 최대 스레드 수
                 0L,                          // 유휴 스레드 유지 시간
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(18_000), // 작업 큐 (크기 제한)
+                new LinkedBlockingQueue<>(18_000), // 작업 큐 (크기 제한) // 18_000 <- replace
                 Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy() // 큐가 가득 찼을 때 호출 스레드에서 실행
         );
@@ -403,7 +406,7 @@ public class MODPlus {
             final int scanIndex = i;
             executor.execute(() -> {
                 try {
-                    Integer selected = Integer.valueOf(-1);
+                    Integer selected = -1;
                     ArrayList<AnsPeptide> candidates = null;
                     ArrayList<AnsPeptide> tp;
 
@@ -412,18 +415,14 @@ public class MODPlus {
                     for (int j = 0; j < sz; j++) {
                         final int JJ = j;
 
-
-                        // Old code
-                        /*Spectrum spectrum = scanTarget.get(JJ).getSpectrum();*/
-
-
-                        // New code
                         MSMScan.SpectrumWithContext specWithContext =
                                 (scanTarget.get(JJ)).getSpectrumWithContext();
                         Spectrum spectrum = specWithContext.getSpectrum();
                         ScanContext__ context = specWithContext.getContext();
 
 
+                        // multi thread 환경에서, 반복문에서, continue 문장의 유효성 - 재 검토하기 (문제 가능성 있음)
+                        // 문제 후보 1 - 이 부분 / 문제 후보 2 - 이 부분이 아닌, 다른 부분(내부 콜 스택 로직 중에서.. 뭔가 잘못 처리되고 있는 아직 발견되지 않은 부분)
                         if (spectrum.getObservedMW() > Constants.maxPeptideMass)
                             continue; // problem. /*semantic_error?*/
 

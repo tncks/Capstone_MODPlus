@@ -4,6 +4,7 @@ import msutil.PGraph;
 import msutil.ProtCutter;
 import processedDB.RetrivedPeptideMap;
 import processedDB.TagTrie;
+import scaniter.ScanContext__;
 
 import java.util.LinkedList;
 
@@ -14,9 +15,9 @@ public class SpectrumAnalyzer {
     }
 
 
-    public TagChainPool buildTagChain(MatchedTagPool matchedTags) {
+    public TagChainPool buildTagChain(MatchedTagPool matchedTags, ScanContext__ context) {
         TagChainPool tagChainPool = new TagChainPool();
-        tagChainPool.buildTagChainPool(matchedTags);
+        tagChainPool.buildTagChainPool(matchedTags, context);
         return tagChainPool;
     }
 
@@ -61,12 +62,13 @@ public class SpectrumAnalyzer {
     }
 
     public MatchedTagPool extendedBuildMatchedTagPool(TagPool primitiveTags, double motherMass,
-                                               TagTrie ixPDB, ProtCutter enzyme, int NTT) {
+                                               TagTrie ixPDB, ProtCutter enzyme, int NTT, ScanContext__ context) {
         if (primitiveTags == null || ixPDB == null)
             return null;
 
-        double minDelta = (Constants.minModifiedMass < 0) ? Constants.minModifiedMass - Constants.gapTolerance : -Constants.gapTolerance;
-        double maxDelta = (Constants.maxModifiedMass > 0) ? Constants.maxModifiedMass + Constants.gapTolerance : +Constants.gapTolerance;
+        double minDelta = (context.getMinModifiedMass() < 0)? context.getMinModifiedMass() - context.getGapTolerance() : -context.getGapTolerance();
+        double maxDelta = (context.getMaxModifiedMass() > 0)? context.getMaxModifiedMass() + context.getGapTolerance() : +context.getGapTolerance();
+
         TagPool longTags = primitiveTags.extractAbove(Constants.minTagLengthPeptideShouldContain);
 
         int realTag = 0;
@@ -86,7 +88,7 @@ public class SpectrumAnalyzer {
 
             if (realTag > Constants.MAX_TAG_SIZE * 2) break;
         }
-        return searchResults.convertToMatchedTagPool(primitiveTags.extract(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain));
+        return searchResults.convertToMatchedTagPool(primitiveTags.extract(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain), context);
     }
 
 }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import msutil.PGraph;
+import scaniter.ScanContext__;
 
 public class Gap implements SpecInterpretation {
 
@@ -233,10 +234,10 @@ public class Gap implements SpecInterpretation {
 		return score;
 	}
 	
-	public boolean isReasonable(){
+	public boolean isReasonable(ScanContext__ context){
 		if( !Constants.isInModifiedRange( this.offset ) ) return false;	
 		
-	//	if ( this.offset > 0 ) return true;
+
 
         int pos = 0; //because no. of allowed mods is max two
 		if( start == 0 ) pos = 1;
@@ -244,8 +245,8 @@ public class Gap implements SpecInterpretation {
 		Sequence seq = matchedPeptide.subSequence(start, end+1);
 		double minMod = Constants.variableModifications.minimumModifiedMass(seq, pos);		
 		double maxMod = Constants.variableModifications.maximumModifiedMass(seq, pos);		
-	//	System.out.println( this.offset + " " + maxMod + " " +minMod + " " + matchedPeptide.subSequence(start, end+1));
-        return !(this.offset < (minMod - Constants.gapTolerance)) && !(this.offset > (maxMod + Constants.gapTolerance));//*/
+
+        return !(this.offset < (minMod - context.getGapTolerance())) && !(this.offset > (maxMod + context.getGapTolerance()));
     }
 
 	public double getScore(PTMRun run, PGraph graph)

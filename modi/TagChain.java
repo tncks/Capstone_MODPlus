@@ -1,12 +1,10 @@
 package modi;
 
+import scaniter.ScanContext__;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.TreeSet;
 
 public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<TagChain> {
@@ -63,7 +61,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		}
 	}
 	
-	public boolean makeGap() {
+	public boolean makeGap(ScanContext__ context) {
 		int peptLastIndex = matchedPeptide.size()-1;
 
 		setMostAbundantBYPeakIntensity();
@@ -135,22 +133,27 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		}
 		
 		for(Gap gap : gapList){	
-			if( !gap.isReasonable() )
+			if( !gap.isReasonable(context) )
 				return false;
 			this.add(gap);
 		}
 		return true;
 	}
 
-	public void setTagChainScore() {
+	public int round(double a){
+		if( a > 0 ) return (int)(a + 0.5);
+		else return (int)(a - 0.5);
+	}
+
+	public void setTagChainScore(ScanContext__ context) {
 		
 		HashSet<Integer> modtype = new HashSet<>();
 
         this.score= 0;
 		for( SpecInterpretation t : this ){
 			if(t instanceof Gap gap) {
-                if( Math.abs( gap.getOffset() ) > Constants.gapTolerance ) {
-					modtype.add( Constants.round(gap.getOffset()) );
+                if( Math.abs( gap.getOffset() ) > context.getGapTolerance() ) {
+					modtype.add( round(gap.getOffset()) );
 				}
 			}
 			if(t instanceof MatchedTag tag){
@@ -253,6 +256,8 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				prun.setPTMs(ptmComb.ptmList, gap.getStart());
 				ix++;
 			}
+
+			// 안 바꾸어도 됨
 			if( modCount <= Constants.maxPTMPerPeptide ) {
 				ptmComb.ptmComb = tempComb.toString();
 				answers.add(ptmComb);

@@ -27,7 +27,7 @@ public class CandidateContainer {
 			while(!hmap.isEmpty()){
 				TagPeptide entry = hmap.getFirst();	
 				if( !ctp.extend(parent, entry, trie, context) ){
-					ctp.arrangeTags();
+					ctp.arrangeTags(context);
 					modlist[size++] = ctp;
 					ctp = new ChainTagPeptide(entry.pStart, entry.pEnd, entry.mTag);
 					ctp.setConservedRegion(entry.pLeft, entry.pRight);
@@ -35,7 +35,7 @@ public class CandidateContainer {
 				parent = entry;
 				hmap.removeFirst();
 			}	
-			ctp.arrangeTags();
+			ctp.arrangeTags(context);
 			modlist[size++] = ctp;
 		}		
 	}

@@ -136,17 +136,17 @@ public class MultiMOD {
                 if (noOfET >= Constants.numberOfEnzymaticTermini) {
                     double massRange = deltas[rowMax - 1] + nTermDeletion + cTermDeletion;
 
-                    // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
-                    if ((massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Constants.precursorTolerance) {
+                    //
+                    if ((massRange < context.getMaxModifiedMass() && massRange > context.getMinModifiedMass()) ||
+                            Math.abs(massRange) < context.getPrecursorTolerance()) {
                         double[] ptms = new double[rowMax];
                         int[] intptms = new int[rowMax];
                         for (int k = 1; k < rowMax - 1; k++) {
                             ptms[k] = deltas[k] + nTermDeletion;
-                            intptms[k] = Constants.round(ptms[k]);
+                            intptms[k] = round(ptms[k]);
                         }
                         ptms[rowMax - 1] = massRange;
-                        intptms[rowMax - 1] = Constants.round(ptms[rowMax - 1]);
+                        intptms[rowMax - 1] = round(ptms[rowMax - 1]);
                         MODaConst.ptmUnit.setPtmMasses(ptms, intptms);
                         double pmzErr = massRange - ptms[rowMax - 1];
 
@@ -227,17 +227,17 @@ public class MultiMOD {
                 if (noOfET >= Constants.numberOfEnzymaticTermini) {
                     double massRange = deltas[rowMax - 1] + nTermDeletion + cTermDeletion;
 
-                    // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
-                    if ((massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Constants.precursorTolerance) {
+                    //
+                    if ((massRange < context.getMaxModifiedMass() && massRange > context.getMinModifiedMass()) ||
+                            Math.abs(massRange) < context.getPrecursorTolerance()) {
                         double[] ptms = new double[rowMax];
                         int[] intptms = new int[rowMax];
                         for (int k = 1; k < rowMax - 1; k++) {
                             ptms[k] = deltas[k] + nTermDeletion;
-                            intptms[k] = Constants.round(ptms[k]); // round ()
+                            intptms[k] = round(ptms[k]); // round ()
                         }
                         ptms[rowMax - 1] = massRange;
-                        intptms[rowMax - 1] = Constants.round(ptms[rowMax - 1]);  // round ()
+                        intptms[rowMax - 1] = round(ptms[rowMax - 1]);  // round ()
                         MODaConst.ptmUnit.setPtmMasses(ptms, intptms);
                         double pmzErr = massRange - ptms[rowMax - 1];
 
@@ -331,10 +331,10 @@ public class MultiMOD {
                             if (currNode.isInsideTag > 0) currNode.isAAJump = 1;
                             else currNode.isAAJump = 0;
                         }
-                    } else { // Modification Jump  // context.getMaxModifiedMass() context.getMinModifiedMass() context.getPrecursorTolerance()
+                    } else { // Modification Jump
                         if (currNode.canObliqueJumpFrom(prevNode)) {
                             if (currNode.mass - prevNode.mass < MODaConst.minimumDistance ||
-                                    currNode.nominalDelta - prevNode.nominalDelta > Constants.maxModifiedMass) continue;
+                                    currNode.nominalDelta - prevNode.nominalDelta > context.getMaxModifiedMass()) continue;
 
                             double prev = (currNode.nominalDelta == prevNode.nominalDelta) ? prevNode.score : prevNode.score - Constants.rNorm[0];
                             if (max < prev) {
@@ -400,8 +400,8 @@ public class MultiMOD {
                                                           MatCell[][] specMatrix, PRM prmTable, double pmzErr, ScanContext__ context) {
 
         int colMax = smEnd - smStart, endingTag = rowMax - 1;
-        // context.getMaxModifiedMass()
-        if (specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass) return null;
+        //
+        if (specMatrix[endingTag][smStart].nominalDelta > context.getMaxModifiedMass()) return null;
         for (int n = smStart; n < smEnd; n++) {
             specMatrix[endingTag][n].refresh();
         }
@@ -473,6 +473,11 @@ public class MultiMOD {
         }
         if (idScore > bestOnlineScore.get()) bestOnlineScore.set((int) idScore);
         return new DPPeptide(peptide, (int) idScore, ptms, smStart);
+    }
+
+    public int round(double a){
+        if( a > 0 ) return (int)(a + 0.5);
+        else return (int)(a - 0.5);
     }
 
 

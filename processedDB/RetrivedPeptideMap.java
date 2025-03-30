@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import modi.Constants;
 import modi.IonDirection;
 import modi.MatchedTag;
 import modi.MatchedTagPool;
 import modi.Peptide;
 import modi.PeptideDBHit;
 import modi.TagPool;
+import scaniter.ScanContext__;
 
 public class RetrivedPeptideMap extends HashMap<String, RetrivedPeptide> {
 
@@ -33,7 +33,7 @@ public class RetrivedPeptideMap extends HashMap<String, RetrivedPeptide> {
 		}		
 	}
 	
-	public MatchedTagPool convertToMatchedTagPool(TagPool shortTags){
+	public MatchedTagPool convertToMatchedTagPool(TagPool shortTags, ScanContext__ context){
 				
 		MatchedTagPool matchedTagMap = new MatchedTagPool();
 		Iterator<Map.Entry<String, RetrivedPeptide>> it = this.entrySet().iterator();
@@ -44,7 +44,7 @@ public class RetrivedPeptideMap extends HashMap<String, RetrivedPeptide> {
 			Peptide pept= new Peptide( entry.getKey(), entry.getValue().getProteinList() );
 			
 			if(!shortTags.isEmpty()){
-				entry.getValue().addExtraTags(shortTags, Constants.maxModifiedMass, Constants.minModifiedMass);
+				entry.getValue().addExtraTags(shortTags, context.getMaxModifiedMass(),context.getMinModifiedMass() );
 			}
 			
 			for( TagMatchToPept mt : entry.getValue().getTagList() ){

@@ -7,9 +7,9 @@ import scaniter.ScanContext__;
 
 public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 
-	public LinkedList<TagChain> buildTagChainList(Map.Entry<Peptide, LinkedList<MatchedTag>> tagPool){
+	public LinkedList<TagChain> buildTagChainList(Map.Entry<Peptide, LinkedList<MatchedTag>> tagPool, ScanContext__ context) {
 		initTagMerge(tagPool);
-		return enumTagChain(tagPool);
+		return enumTagChain(tagPool, context);
 	}
 
 	public MatchedTag getMatchedB2Tag(Tag tag, Peptide pept)
@@ -143,7 +143,7 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 		}
 	}
 
-	public LinkedList<TagChain> enumTagChain(Map.Entry<Peptide, LinkedList<MatchedTag>> entry)
+	public LinkedList<TagChain> enumTagChain(Map.Entry<Peptide, LinkedList<MatchedTag>> entry, ScanContext__ context)
 	{
 		LinkedList<MatchedTag> tagList = entry.getValue();
 		tagList.sort(new SpecInterpretationComparator());	// sort matched tag list by start position
@@ -191,8 +191,8 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 		double topSCore = 0;
 		while( listIt.hasNext() ){
 			TagChain curTC = listIt.next();
-			if( curTC.makeGap() ){
-				curTC.setTagChainScore();
+			if( curTC.makeGap(context) ){
+				curTC.setTagChainScore(context);
 				if( curTC.score < 0 ) listIt.remove();
 				if( curTC.score > topSCore )
 					topSCore = curTC.score;
@@ -339,7 +339,7 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 	}
 
 
-	public void buildTagChainPool(MatchedTagPool matchedTags)
+	public void buildTagChainPool(MatchedTagPool matchedTags, ScanContext__ context)
 	{
 		if( matchedTags == null || matchedTags.isEmpty()){
 			return;
@@ -351,7 +351,7 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 		while(it.hasNext())
 		{
 			Map.Entry<Peptide, LinkedList<MatchedTag>> entry = it.next();
-			tcList = buildTagChainList(entry);
+			tcList = buildTagChainList(entry, context);
 			if(tcList.isEmpty()){ continue; }
 			Peptide matchedPeptide = new Peptide(entry.getKey());
 			put(matchedPeptide, tcList);
