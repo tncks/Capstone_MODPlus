@@ -22,6 +22,126 @@ import processedDB.*;
 import scaniter.MSMScan;
 import scaniter.ScanIterator;
 
+/*******************************************************************/
+/*******************************************************************/
+// some refined example code (suggestion)
+// reference purpose (read-only for now and commented (?) )
+/*class BetterExampleMain {
+
+    private final ExecutorService executor;
+    private final CountDownLatch latch;
+    private final ConcurrentHashMap<Integer, ResultEntry> results;
+
+    public BetterExampleMain(ExecutorService executor) {
+        this.executor = executor;
+        this.latch = new CountDownLatch(allScans.size());
+        this.results = new ConcurrentHashMap<>();
+    }
+
+    public void processScans(Iterator<ArrayList<MSMScan>> scaniter) throws InterruptedException {
+        int totalSize = scaniter.size();
+        List<ArrayList<MSMScan>> allScans = new ArrayList<>();
+
+        // Add all scans to the list
+        while (scaniter.hasNext()) {
+            allScans.add(scaniter.getNext());
+        }
+
+        // task submit per thread
+        for (int i = 0; i < allScans.size(); i++) {
+            final int scanIndex = i;
+            executor.execute(() -> {
+                try {
+                    // Create ScanContext per thread
+                    ScanContext context = new ScanContext(
+                            Constants.precursorTolerance,
+                            Constants.maxNoOfC13,
+                            Constants.maxPeptideMass,
+                            Constants.fragmentTolerance
+                    );
+
+                    processScan(scanIndex, allScans.get(scanIndex), context);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+    }
+
+    private void processScan(int scanIndex, ArrayList<MSMScan> scanTarget, ScanContext context) {
+        try {
+            int selected = -1;
+            ArrayList<AnsPeptide> candidates = null;
+            ArrayList<AnsPeptide> tp;
+
+            // Loop through the scan
+            for (int j = 0; j < scanTarget.size(); j++) {
+                final int JJ = j;
+                Spectrum spectrum = scanTarget.get(JJ).getSpectrum();
+
+                // Use ScanContext for accessing tolerance settings
+                if (spectrum.getObservedMW() > context.getMaxPeptideMass()) continue;
+
+                PGraph graph = spectrum.getPeakGraph();
+                spectrum.setCorrectedParentMW(graph.correctMW(dynamicPMCorrection));
+
+                TagPool tPool = (new TagSourceBuilder()).buildTagPool(spectrum);
+                DPHeap heatedPepts = (new OneMOD()).getHeatedPeptides(ixPDB, graph, tPool, context.getMaxNoOfC13() > 0);
+
+                // Further processing logic
+                if (heatedPepts == null) continue;
+
+                final int numHeatedPeptides_f = numHeatedPeptides;
+                HeatedDB bitDB = (new DBHolder()).getHeatedDB(ixPDB, heatedPepts, null, numHeatedPeptides_f);
+                TagTrie bitTrie = bitDB.getPartialDB(ixPDB);
+
+                tp = (new DynamicDBHolder()).dynamicMODeye(bitTrie, graph, tPool);
+                if (tp.size() > 0) {
+                    if (candidates == null || candidates.get(0).compareTo(tp.get(0)) == 1) {
+                        candidates = tp;
+                        selected = JJ;
+                    }
+                }
+            }
+
+            if (selected != -1) {
+                HashMap<String, ArrayList<PeptideMatchToProtein>> seqToProtMap = new HashMap<>();
+
+                for (int k = 0; k < candidates.size(); k++) {
+                    final int KK = k;
+                    String tpSeq = candidates.get(KK).getPeptideSequence();
+                    ArrayList<PeptideMatchToProtein> matchedProteins = seqToProtMap.get(tpSeq);
+
+                    if (matchedProteins == null) {
+                        matchedProteins = ixPDB.getMatchProteins(tpSeq);
+                        seqToProtMap.put(tpSeq, matchedProteins);
+                    }
+                }
+
+                results.put(scanIndex, new ResultEntry(scanTarget.get(selected), candidates, seqToProtMap));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}*/ /**continued */  /* public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(10);  // 예시로 10개의 스레드를 사용
+        MSMScanProcessor processor = new MSMScanProcessor(executor);
+
+        // scaniter에 적합한 데이터를 전달하는 예시
+        processor.processScans(scaniter);
+
+        executor.shutdown();
+    }
+}*/
+/*******************************************************************/
+/*******************************************************************/
+
 public class MODPlus {
     private static final String[] message = {
             "[Error] Cannot read any MS/MS scan from input dataset.\r\n" +
@@ -418,6 +538,8 @@ public class MODPlus {
                         spectrum.setCorrectedParentMW(graph.correctMW(dynamicPMCorrection));
                         TagPool tPool = (new TagSourceBuilder()).buildTagPool(spectrum);
 
+                        // Notice
+                        // ixPDB 참조: 코드에서 ixPDB가 여러 곳에서 참조되고 있는데, 이것이 공유 자원인 경우 동시 접근에 대한 처리가 필요할 수 있습니다
                         DPHeap heatedPepts = (new OneMOD()).getHeatedPeptides(ixPDB, graph, tPool, considerIsotopeErr);
                         DPHeap tepidPepts = null;
                         if (Constants.maxPTMPerPeptide > 1) {
@@ -449,6 +571,9 @@ public class MODPlus {
                             String tpSeq = candidates.get(KK).getPeptideSequence();
                             ArrayList<PeptideMatchToProtein> matchedProteins = seqToProtMap.get(tpSeq);
 
+
+                            // Notice22
+                            // ixPDB 참조2
                             if (matchedProteins == null) {
                                 // 기존에 테이블에 없으면 새롭게 키 밸류 정보 등록 (최초)
                                 matchedProteins = ixPDB.getMatchProteins(tpSeq);
@@ -524,3 +649,52 @@ public class MODPlus {
 
 
 
+
+
+
+
+
+// 리팩토링 진행 후에는 메인 함수도 수정해야 하니, 이 파일 맨 아래에 주석으로 적혀있는 class MTemp {. .. } 코드 내용 확인하기 (리팩 후)
+// 기존 Constants.java 코드는 어느정도 수정을 할 것인지 생각하기
+// set_parameter() 코드의 의존성에도 수정 시 주의하기
+
+
+// 최종 (Main 단 코드 수정 및 리팩토링 적용가능 예)
+/*class MTemp {
+    // 수정된 코드
+    static void dummyWrapper() {
+        Object executor = null;
+
+        executor.execute(() -> {
+            try {
+                // MSMScan에서 컨텍스트와 함께 스펙트럼 가져오기
+                MSMScan.SpectrumWithContext swc = scanTarget.get(JJ).getSpectrumWithContext();
+                Spectrum spectrum = swc.getSpectrum();
+                ScanContext context = swc.getContext();
+
+                // Constants 대신 컨텍스트에서 값 사용
+                if (spectrum.getObservedMW() > context.getMaxPeptideMass()) continue;
+
+                PGraph graph = spectrum.getPeakGraph();
+                spectrum.setCorrectedParentMW(graph.correctMW(dynamicPMCorrection));
+                TagPool tPool = (new TagSourceBuilder()).buildTagPool(spectrum);
+
+                // 이전: (Constants.maxNoOfC13 != 0 || Constants.precursorTolerance > 0.50001)
+                // 수정: 컨텍스트에서 값 사용
+                boolean considerIsotopeErr = (context.getMaxNoOfC13() != 0 ||
+                        context.getPrecursorTolerance() > 0.50001) ? true : false;
+
+                DPHeap heatedPepts = (new OneMOD()).getHeatedPeptides(ixPDB, graph, tPool, considerIsotopeErr);
+
+                // 이전: (Constants.maxPTMPerPeptide > 1)
+                // 수정: 이 부분도 컨텍스트에 추가해야 함
+
+                // ... 나머지 코드 ...
+            } catch (Exception e) {
+                // ...
+            }
+        });
+    }
+
+}
+*/
