@@ -2,3 +2,6 @@ sources
 .idea/
 out/
 MODPlusProject.iml
+*.txt
+*.mgf
+*.fasta

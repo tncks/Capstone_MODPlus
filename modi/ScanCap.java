@@ -1,10 +1,7 @@
 package modi;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.StringTokenizer;
 
 public class ScanCap implements Comparable<ScanCap> {
 	private final String 	title;
@@ -40,71 +37,7 @@ public class ScanCap implements Comparable<ScanCap> {
 	public int getCharge(){ return charge; }
 	public long getOffset(){ return offset; }
 	
-	public Spectrum getSpectrum( RandomAccessFile in ) throws IOException {
-		
-		if( Constants.rangeForIsotopeIncrement != 0 ){
-			Constants.maxNoOfC13 = (int)Math.ceil( neutralMW / Constants.rangeForIsotopeIncrement );			
-		}
-		
-		if( Constants.PPMTolerance != 0 ) {
-			Constants.precursorAccuracy = Constants.PPMtoDalton(neutralMW, Constants.PPMTolerance);
-		}
-		Constants.precursorTolerance = Constants.precursorAccuracy + Constants.maxNoOfC13*Constants.IsotopeSpace;
-	
-		String s;
-		
-		ArrayList<RawP> rawPL = new ArrayList<>();
-		in.seek( this.offset );
-		while( (s = in.readLine()) != null ) {
-			StringTokenizer token = new StringTokenizer(s);
-			if( token.countTokens() > 1 ){
-				if( !Character.isDigit(s.charAt(0)) ) break;
-				rawPL.add( new RawP(Double.parseDouble(token.nextToken()), Double.parseDouble(token.nextToken())) );
-			}
-			else break;
-		}
-		Collections.sort( rawPL );
-		
-	//	processingiTRAQ(rawPL);
-		
-		int index = 0;
-		Spectrum spectrum = new Spectrum( this.pmz, this.charge, this.title );
-		
-		double basePeakIntensity=0, TIC=0;
-		double tarMass=0, tarInten=0;
-		for( RawP rp : rawPL ) {
-			double mass = rp.mz;
-			double intensity = rp.it;
-			
-			if( intensity <= 0 || mass <= 0 ) continue;
-			if( mass > neutralMW ) continue;
-		//	if( Math.abs( mass-pmz ) < 2. ) continue;	
-			
-			if( ( mass - tarMass ) < tolerance ){
-				double sum = tarInten + intensity;
-				tarMass = tarMass*(tarInten/sum)+ mass*(intensity/sum);
-				tarInten += intensity;
-				spectrum.get(index-1).set(tarMass, tarInten);
-			}
-			else{
-				spectrum.add( new Peak(index++, mass, intensity) );
-				tarMass = mass;
-				tarInten = intensity; 
-			}
-			TIC += intensity;
-			if( tarInten > basePeakIntensity )
-				basePeakIntensity= tarInten;
-		}		
-		spectrum.setExtraInformation( basePeakIntensity, TIC );
-		
-		Constants.gapTolerance = Constants.fragmentTolerance*2;
-		Constants.nonModifiedDelta = (Constants.precursorTolerance<Constants.massToleranceForDenovo)? Constants.precursorTolerance : Constants.massToleranceForDenovo;
-				
-		if( Constants.precursorTolerance > Constants.gapTolerance )
-			Constants.gapTolerance = Constants.precursorTolerance;		
-		
-		return spectrum; 
-	}
+
 	
 	private static class RawP implements Comparable<RawP> {
 		final double mz;

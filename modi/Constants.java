@@ -7,47 +7,9 @@ import msutil.ProtCutter;
 
 public class Constants {
 	
-	public static String engine;
-	public static String engineVersion;
 
-	public static String runDate;
-	public static String runUser= "anonymous";
-	public static String runTitle;
-	
-	public static String 			SPECTRUM_LOCAL_PATH;
-	public static String 			SPECTRUM_FILE_NAME;
-	public static String 			INSTRUMENT_NAME = "TRAP";
-	
-	public static msms_type	 		INSTRUMENT_TYPE = msms_type.TRAP; //TOF(0), LOW_TRAP(1), HIGH_TRAP(2)
-	public static spectra_format 	SPECTRA_FILE_TYPE = spectra_format.MGF;	
-	
-	public enum spectra_format {
-		PKL,		// read spectrums in SPECTRUM_FILE_NAME
-		DTA,		// read all dta file from SPECTRUM_FILE_NAME(compressed file)
-		MGF,		// read spectrums in SPECTRUM_FILE_NAME
-		MS2,
-		MZXML,		// read spectrums in SPECTRUM_FILE_NAME
-		ZIPDTA, 
-	}
-	
-	public enum msms_type {
-		QTOF,
-		TRAP,
-	}
-	
-	public enum instrument_resolution {
-	}
-	
-	public enum experimental_protocol {
-		iTRAQ,		
-	}
-	
-	public static String 		PROTEIN_DB_LOCAL_PATH;
+
 	public static final String 		DECOY_LABEL="dec_";
-
-	public static int			targetDecoy=0;
-
-	public static String 		firstSearchProgram = "";
 
 	public static final double	UNIT_MASS = 1.;
 	
@@ -60,15 +22,61 @@ public class Constants {
 	public static final double	NH3 = Hydrogen*3 + Nitrogen;		
 	public static final double	IsotopeSpace = 1.00235;
 	
-	public static double		NTERM_FIX_MOD = 0;
-	public static double		CTERM_FIX_MOD = 0;
+
 	public static final double	B_ION_OFFSET = Proton;
 	public static final double	Y_ION_OFFSET = H2O + Proton;
 	public static final double	A_ION_OFFSET = Oxygen + 12.;
 	public static final double  IMM_OFFSET = -A_ION_OFFSET + Proton;
 	
 	public static final double		minPeptideMass = 300.;
-	public static final double		maxPeptideMass = 5000.;//
+	public static final double		maxPeptideMass = 5000.;
+
+	public static final double		minNormIntensity = 0.00;
+
+	public static final int			maxTagPerPept     	= 12;
+	public static final int			maxTagChainPerPept  = 30;
+	public static final int 			maxInterpretationPerGap	= 10;
+	public static final double		selectionWindowSize   = 70;
+	public static final String	UNIMOD_FILE_NAME = "unimod.xml";
+	public static final double[] rNorm= {6,
+			2.928968, 1.928968, 1.428968, 1.095635, 0.845635,
+			0.645635, 0.478968, 0.336111, 0.211111, 0.100000};
+
+
+	public enum spectra_format {
+		PKL,
+		DTA,
+		MGF,
+		MS2,
+		MZXML,
+		ZIPDTA,
+	}
+
+	public enum msms_type {
+		QTOF,
+		TRAP,
+	}
+
+
+
+	public static String engine;
+	public static String engineVersion;
+	public static String runDate;
+	public static String runUser= "anonymous";
+	public static String runTitle;
+
+	public static String 			SPECTRUM_LOCAL_PATH;
+	public static String 		    PROTEIN_DB_LOCAL_PATH;
+	public static String 			INSTRUMENT_NAME = "TRAP";
+	public static msms_type	 		INSTRUMENT_TYPE = msms_type.TRAP;
+	public static spectra_format 	SPECTRA_FILE_TYPE = spectra_format.MGF;
+
+	public static int			targetDecoy=0;
+
+	public static String 		firstSearchProgram = "";
+
+	public static double		NTERM_FIX_MOD = 0;
+	public static double		CTERM_FIX_MOD = 0;
 	
 	public static ProtCutter 	protease = ProtCutter.getCutter("Trypsin");
 	public static int			numberOfEnzymaticTermini = 2;
@@ -87,26 +95,21 @@ public class Constants {
 	public static double		fragmentTolerance = 0.6;
 	public static double		gapTolerance = 0.6;	
 	public static double		gapAccuracy = 1.6;	
-	public static final double		minNormIntensity = 0.00;
+
 	
 	public static PTMDB 		variableModifications;
 	public static PTMDB 		fixedModifications;
 	public static double		minModifiedMass = -precursorTolerance;
 	public static double		maxModifiedMass = precursorTolerance;
 	public static boolean		canBeModifiedOnFixedAA = false;
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean		isInModifiedRange(double v ){
-		if( minModifiedMass-gapTolerance < v && v < maxModifiedMass+gapTolerance ) return true;
-		else return Math.abs(v) <= gapTolerance;
-	}
-	
-	public static int			MSResolution 	= 0; // if 1, high (FT, OrbiTrap)
-	public static int			MSMSResolution 	= 0; // if 1, high (FT, OrbiTrap)
-	
+
+	public static int			MSResolution 	= 0;
+	public static int			MSMSResolution 	= 0;
+
 	//for De novo sequencing
 	public static double		massToleranceForDenovo = 0.3;
 	public static int 			MAX_TAG_SIZE = 50;
-	public static final double		selectionWindowSize   = 70;
+
 	public static int			minNumOfPeaksInWindow = 4;
 	public static int			minTagLength = 3;
 	public static int			minTagLengthPeptideShouldContain = 3;
@@ -114,27 +117,37 @@ public class Constants {
 	public static boolean		Lys_indistinguishable_Qln = true;
 
 	public static double		tagChainPruningRate = 0.5;
-	public static final int			maxTagPerPept     	= 12;
-	public static final int			maxTagChainPerPept  = 30;
-	public static final int 			maxInterpretationPerGap	= 10;
+
 	public static int			maxPTMPerGap		= 2;
 	public static int 			maxPTMPerPeptide	= 4;
-	
-	public static int getMaxPTMOccurrence( int seqLength ){		
-		if( seqLength > 10 ) return 1;
-		return maxPTMPerGap;
-	}
-	
-	public static String		PTM_FILE_NAME = "PTMDB.xml";
 
-	public static final String	UNIMOD_FILE_NAME = "unimod.xml";
+	public static String		PTM_FILE_NAME = "PTMDB.xml";
 
 	public static double		nonModifiedDelta = massToleranceForDenovo;
 
 	public static String		isobaricTag = "";
 	public static double[]		reporterMassOfIsobaricTag = null;
-	
+
 	public static String		enrichedModification = "";
+
+
+
+
+
+
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public static boolean		isInModifiedRange(double v ){
+		if( minModifiedMass-gapTolerance < v && v < maxModifiedMass+gapTolerance ) return true;
+		else return Math.abs(v) <= gapTolerance;
+	}
+
+	public static int getMaxPTMOccurrence( int seqLength ){		
+		if( seqLength > 10 ) return 1;
+		return maxPTMPerGap;
+	}
+	
+
 	
 	public static void	adjustParameters(){
 		if( INSTRUMENT_TYPE == msms_type.QTOF ) { // TOF
@@ -167,22 +180,16 @@ public class Constants {
         return Math.abs(v1 - v2) <= fragmentTolerance;
 	}
 
-	public static final double[] rNorm= {6,
-		2.928968, 1.928968, 1.428968, 1.095635, 0.845635,
-		0.645635, 0.478968, 0.336111, 0.211111, 0.100000};
+
 	
-	public static final double[] coEfft= {0.3159, -34.6288, 1.3209, -8.7609, 0., - 5.0206};
-	public static double getMODScore( double a, double b, double c, double d, double e){
-		return coEfft[0]*a + coEfft[1]*b + coEfft[2]*c + coEfft[3]*d + coEfft[4]*e + coEfft[5]; 		
-	}
+
+
 	
 	public static String	getString(double value){
 		return new DecimalFormat("#.###").format(value);
 	}
 
-	public static double	PTM_ADD_PENALTY = 0.2;
 
-	public static final	double	ANALYSIS_VERSION = 0.8;
 	
 	public static boolean isWithinTolerance(double calc, double obsv, double tol){
 
