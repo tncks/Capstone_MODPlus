@@ -1,7 +1,6 @@
 package modi;
 
-import java.util.ArrayList;
-import java.util.Collections;
+
 
 public class ScanCap implements Comparable<ScanCap> {
 	private final String 	title;
@@ -10,8 +9,6 @@ public class ScanCap implements Comparable<ScanCap> {
 	private final int 	charge;
 	private int 	scanNo;
 	private long 	offset;
-	
-	private static final double tolerance= Constants.massToleranceForDenovo;
 	
 	public ScanCap(String title, double pmz, int charge){
 	
@@ -63,51 +60,5 @@ public class ScanCap implements Comparable<ScanCap> {
 		else return 0;
 	}
 	
-	private void xprocessingiTRAQ(ArrayList<RawP> rawPL){
-		
-		ArrayList<RawP> reporters = new ArrayList<>();
-		reporters.add( new RawP(114.1105, Constants.fragmentTolerance) );//reporterIon114
-		reporters.add( new RawP(115.1074, Constants.fragmentTolerance) );//reporterIon115
-		reporters.add( new RawP(116.1107, Constants.fragmentTolerance) );//reporterIon116
-		reporters.add( new RawP(117.1141, Constants.fragmentTolerance) );//reporterIon117
-		
-		reporters.add( new RawP(Constants.NTERM_FIX_MOD + Constants.Proton, Constants.fragmentTolerance) );//iTRAQ TAG
-		
-		int fragCS = 1;
-		while( true ){
-			double compItraqTag = (this.neutralMW - Constants.NTERM_FIX_MOD + Constants.Proton*fragCS)/fragCS;
-	
-			double secondIso = compItraqTag + Constants.IsotopeSpace/fragCS;
-			double thirdIso  = secondIso + Constants.IsotopeSpace/fragCS;
-			double forthIso  = thirdIso + Constants.IsotopeSpace/fragCS;
-			
-			reporters.add( new RawP(compItraqTag, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			reporters.add( new RawP(secondIso, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			reporters.add( new RawP(thirdIso, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			reporters.add( new RawP(forthIso, Constants.fragmentTolerance) );//precursor without iTRAQ TAG//*/
 
-//			reporters.add( new RawP(compItraqTag, (3*Constants.IsotopeSpace/fragCS)+Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			for(int i=1; i<=Constants.maxNoOfC13; i++){
-				reporters.add( new RawP(compItraqTag-i*Constants.IsotopeSpace/fragCS, Constants.fragmentTolerance) );//precursor without iTRAQ TAG
-			}//*/
-
-			if( ++fragCS >= this.charge ) break;
-		}
-
-		Collections.sort(reporters);
-		
-		int start = 0;
-		for( RawP rp : reporters ){
-			for (int i=start; i<rawPL.size(); i++){
-				if( rawPL.get(i).mz < rp.mz-rp.it ) continue;
-				else if( rawPL.get(i).mz > rp.mz+rp.it ) {
-					start = i;
-					break;
-				}				
-				rawPL.remove(i);
-				i--;
-			}
-		}
-	
-	}
 }

@@ -319,6 +319,10 @@ public class MODPlus {
         }
 
         try {
+            Constants.MAX_TAG_SIZE = 100;
+            Constants.minTagLength = 2;
+            Constants.minTagLengthPeptideShouldContain = 3;
+            Constants.tagChainPruningRate = 0.4;
             File analPath = new File(Constants.SPECTRUM_LOCAL_PATH);
             if (analPath.isDirectory()) {
                 String type = Constants.SPECTRA_FILE_TYPE.toString().toLowerCase();
@@ -341,39 +345,21 @@ public class MODPlus {
 
     static int modplus_mod_search() throws Exception{
         System.out.println("Starting MODPlus for modification search!");
+        long startTime= System.currentTimeMillis();
 
-        Constants.MAX_TAG_SIZE = 100;
-        Constants.minTagLength = 2;
-        Constants.minTagLengthPeptideShouldContain = 3;
-        Constants.tagChainPruningRate = 0.4;
-
-        String identifier = Constants.SPECTRUM_LOCAL_PATH;
-        identifier = identifier.substring(0, identifier.lastIndexOf('.'));
-
-        // SpectrumContainer generation
         ScanIterator scaniter = ScanIterator.get( Constants.SPECTRUM_LOCAL_PATH, Constants.SPECTRA_FILE_TYPE );
-        if( scaniter == null || scaniter.size() == 0 ){
-            System.out.println("Failed to read msms spectra file" );
-            return 1;
-        }
-        System.out.println( scaniter.size() + " scans"  );
-
-        // Protein DB generation
-        System.out.print( "Reading protein database.....  " );
-        StemTagTrie ixPDB= new StemTagTrie( Constants.PROTEIN_DB_LOCAL_PATH );
-        if( ixPDB.getSizeOfEntries() == 0 ){
-            System.out.println( "Failed to read protein fasta file" );
+        StemTagTrie  ixPDB = new StemTagTrie( Constants.PROTEIN_DB_LOCAL_PATH );
+        final boolean considerIsotopeErr = ( Constants.maxNoOfC13 !=0 || Constants.precursorTolerance > 0.50001 )? true : false;
+        if( scaniter == null || scaniter.size() == 0 || ixPDB.getSizeOfEntries() == 0 ){
             return 1;
         }
         System.out.println();
 
-        long startTime= System.currentTimeMillis();
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(identifier+".modplus.txt")));
-
-        boolean considerIsotopeErr = ( Constants.maxNoOfC13 !=0 || Constants.precursorTolerance > 0.50001 )? true : false;
-
         int index = 1;
         int iterSize= scaniter.size();
+        String identifier = Constants.SPECTRUM_LOCAL_PATH;
+        identifier = identifier.substring(0, identifier.lastIndexOf('.'));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(identifier+".modplus.txt")));
         while( scaniter.hasNext() ){
 
             ArrayList<MSMScan> chargedSpectra = scaniter.getNext();
@@ -424,8 +410,8 @@ public class MODPlus {
                 HeatedDB bitDB =  getHeatedDB( ixPDB, heatedPepts, tepidPepts );
                 TagTrie bitTrie = bitDB.getPartialDB(ixPDB);
 
-                ArrayList<AnsPeptide> tp= dynamicMODeye( bitTrie, graph, tPool ); //MODeye
-                if( tp.size() > 0 ) { //decision Of CS
+                ArrayList<AnsPeptide> tp= dynamicMODeye( bitTrie, graph, tPool );
+                if( tp.size() > 0 ) {
                     if( candidates == null || candidates.get(0).compareTo( tp.get(0) ) == 1 ) {
                         candidates = tp;
                         selected = i;
@@ -436,7 +422,7 @@ public class MODPlus {
             if( selected != -1 ) {
                 MSMScan scan = chargedSpectra.get(selected);
 
-                HashMap<String, ArrayList<PeptideMatchToProtein>> seqToProtMap = new HashMap<String, ArrayList<PeptideMatchToProtein>>();
+                HashMap<String, ArrayList<PeptideMatchToProtein>> seqToProtMap = new HashMap<>();
                 out.println( ">>"+scaniter.getFileName()+"\t"+scan.getHeader() );
 
                 for( int k=0; k<candidates.size(); k++ ){

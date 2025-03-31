@@ -2,7 +2,7 @@ package scaniter;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.StringTokenizer;
+
 
 import modi.Constants;
 import modi.Peak;
@@ -22,14 +22,16 @@ public class MSMScan {
 	private final int 		charge;
 	private Spectrum 	peaklist;
 	private static final double tolerance= Constants.massToleranceForDenovo;
-	
-	//private double 	fragmentTol = 0;
+
 	private double 	precursorTolerance = 0;
 	private double 	precursorAccuracy= 0;
 	private double 	gapTolerance = 0;
 	private double 	nonModifiedDelta = 0;
 	private int		maxNoOfC13 = 0;
-	
+
+
+	// constructor invocation usage from Iterator
+	// where: public ArrayList<MSMScan> getNext() { ... } at MGFIterator.java
 	public MSMScan(int index, double pmz, int charge){
 		this.title 		= "";
 		this.specIndex	= index;
@@ -48,11 +50,6 @@ public class MSMScan {
 		this.neutralMW 	= (pmz - Constants.Proton)*charge;
 	}
 
-	public double 	getObservedMW(){ return neutralMW; }
-
-	public String 	getHeader(){ return String.format("%d\t%.4f\t%d\t%d\t%s",
-													specIndex, neutralMW, charge, scanNo, title); }
-	
 	public Spectrum getSpectrum() { 
 		Constants.precursorTolerance= precursorTolerance;
 		Constants.precursorAccuracy	= precursorAccuracy;
@@ -159,36 +156,10 @@ public class MSMScan {
 		}	
 	}
 
-	private static ArrayList<Integer> getCharge(String csline){
-		ArrayList<Integer> cslist = new ArrayList<>();
-		
-		StringTokenizer csTok = new StringTokenizer(csline, "|");
-		while( csTok.hasMoreTokens() ){
-			String csStr = csTok.nextToken();
-			int t_cs;
-			int st = 0, ed = 1;
-			for(int i=st; i<csStr.length(); i++){
-				if( Character.isDigit( csStr.charAt(i) ) ){
-					st = i;
-					ed = st+1;
-					break;
-				}
-			}
-			for(int i=ed; i<csStr.length(); i++){
-				if( !Character.isDigit( csStr.charAt(i) ) ){
-					ed = i;
-					break;
-				}
-			}
-			try {
-				t_cs= Integer.parseInt( csStr.substring(st,ed) );
-			} catch (NumberFormatException e) {
-				t_cs = 0;
-			}
-			if( t_cs!= 0 ) cslist.add(t_cs);
-		}
-		return cslist;
-	}
+	public double 	getObservedMW(){ return neutralMW; }
+
+	public String 	getHeader(){ return String.format("%d\t%.4f\t%d\t%d\t%s",
+			specIndex, neutralMW, charge, scanNo, title); }
 	
 }
 

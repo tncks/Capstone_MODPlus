@@ -25,7 +25,8 @@ public class MGFIterator extends ScanIterator {
 		scanIndex = 1;
 		fin = new BufferedReader( new FileReader(fileName) );
 	}
-	
+
+	// single thread -> multi thread issue can occur here due to MSMScan
 	public ArrayList<MSMScan> getNext() throws IOException {
 		
 		ArrayList<MSMScan> scanlist = new ArrayList<>();
