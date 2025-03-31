@@ -48,8 +48,8 @@ public class MODPlus {
 
             "[Error] Not defined"
     };
-    static boolean dynamicPMCorrection = false, multiBlind = true;
-    static int numHeatedPeptides = 50;
+    static final boolean dynamicPMCorrection = false, multiBlind = true;
+    static final int numHeatedPeptides = 50;
 
     public static void main(String[] args) throws Exception {
         Constants.engine = "modplus";
@@ -373,6 +373,7 @@ public class MODPlus {
         System.out.println();
 
         int NUM_THREADS = Runtime.getRuntime().availableProcessors();
+        NUM_THREADS=1; /////////////////////////////////////////////////////////////////////////////////
         // 18_000 <- replace by new Queue <> capacity <- scaniter.size() + 2.  int capacity = scaniter.size()+2;
 
         ThreadPoolExecutor executor = new ThreadPoolExecutor(

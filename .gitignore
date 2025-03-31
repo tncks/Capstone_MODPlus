@@ -3,3 +3,5 @@ sources
 out/
 MODPlusProject.iml
 *.txt
+*.mgf
+*.fasta

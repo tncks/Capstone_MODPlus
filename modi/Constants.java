@@ -7,7 +7,7 @@ import msutil.ProtCutter;
 
 public class Constants {
 	
-	public static final String 		DECOY_LABEL="dec_";
+	public static final String 	DECOY_LABEL="dec_";
 	public static final double	UNIT_MASS = 1.;
 	public static final double	Electron = 0.000549;
 	public static final double	Hydrogen = 1.007825035;
@@ -18,13 +18,6 @@ public class Constants {
 	public static final double	H2O = Hydrogen*2 + Oxygen;
 	public static final double	Y_ION_OFFSET = H2O + Proton;
 	public static final double	NH3 = Hydrogen*3 + Nitrogen;
-	
-	/*public enum instrument_resolution {
-	}*/
-	
-	/*public enum experimental_protocol {
-		iTRAQ,		
-	}*/
 	public static final double	IsotopeSpace = 1.00235;
 	public static final double	A_ION_OFFSET = Oxygen + 12.;
 	public static final double  IMM_OFFSET = -A_ION_OFFSET + Proton;
@@ -50,22 +43,10 @@ public class Constants {
 	public static String runUser= "anonymous";
 	public static String runTitle;
 	public static String 			SPECTRUM_LOCAL_PATH;
-	//public static String 			SPECTRUM_FILE_NAME;
 	public static String 			INSTRUMENT_NAME = "TRAP";
 	public static msms_type	 		INSTRUMENT_TYPE = msms_type.TRAP; //TOF(0), LOW_TRAP(1), HIGH_TRAP(2)
 	public static spectra_format 	SPECTRA_FILE_TYPE = spectra_format.MGF;
 	public static String 		PROTEIN_DB_LOCAL_PATH;
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -88,11 +69,7 @@ public class Constants {
 
 	public static double		PPMTolerance = 0;
 	public static double		fragmentTolerance = 0.6; 	public static double		gapTolerance = 0.6;	  	public static double		gapAccuracy = 1.6;
-	/*
-    public static boolean		isInModifiedRange(double v ){
-		if( minModifiedMass-gapTolerance < v && v < maxModifiedMass+gapTolerance ) return true;
-		else return Math.abs(v) <= gapTolerance;
-	}*/
+
 	public static PTMDB 		variableModifications; /*OBJECT (static obj) problem concurrency analysis needed */
 	public static PTMDB 		fixedModifications;    /*OBJECT (static obj) problem concurrency analysis needed */
     public static double		minModifiedMass = -precursorTolerance;
@@ -113,10 +90,7 @@ public class Constants {
 	public static double		tagChainPruningRate = 0.5;
 	public static int			maxPTMPerGap		= 2;
 	
-	/*public static int getMaxPTMOccurrence( int seqLength ){
-		if( seqLength > 10 ) return 1;
-		return maxPTMPerGap;
-	}*/
+
 	public static int 			maxPTMPerPeptide	= 4;
 	public static String		PTM_FILE_NAME = "PTMDB.xml";
 	public static double		nonModifiedDelta = massToleranceForDenovo;
@@ -129,18 +103,20 @@ public class Constants {
 	public static void	adjustParameters(){
 		if( INSTRUMENT_TYPE == msms_type.QTOF ) { // TOF
 			massToleranceForDenovo = 0.2;
-			minNumOfPeaksInWindow = 4;
-			rNorm[0]= 6;
+
 		}
 		else {
 			massToleranceForDenovo = ( MSMSResolution == 0 )? 0.3 : 0.03;	
-			minNumOfPeaksInWindow = 4;
-			rNorm[0]= 6;
+
 		}
+		minNumOfPeaksInWindow = 4;
+		rNorm[0]= 6;
+
+
 		if( massToleranceForDenovo > fragmentTolerance/2 ) massToleranceForDenovo = fragmentTolerance/2;
 		if( fragmentTolerance < 0.1 ) MSMSResolution = 1;
-		Constants.Lys_indistinguishable_Qln = MSMass.isIndistinguishableAA('K', 'Q');
-		Constants.Leu_indistinguishable_Ile = MSMass.isIndistinguishableAA('L', 'I');
+		Lys_indistinguishable_Qln = MSMass.isIndistinguishableAA('K', 'Q');
+		Leu_indistinguishable_Ile = MSMass.isIndistinguishableAA('L', 'I');
 		
 		if( canBeModifiedOnFixedAA ){			
 			double fixedOff = -20;
@@ -161,25 +137,13 @@ public class Constants {
 		return new DecimalFormat("#.###").format(value);
 	}
 	
-	/*public static double PPMtoDalton(double mass, double ppm){
-		return mass/1000000*ppm;
-	}
-	public static double getMODScore( double a, double b, double c, double d, double e){
-		return coEfft[0]*a + coEfft[1]*b + coEfft[2]*c + coEfft[3]*d + coEfft[4]*e + coEfft[5]; 		
-	}*/
+
 	
 	public static int round(double a){
 		if( a > 0 ) return (int)(a + 0.5);
 		else return (int)(a - 0.5);
 	}
 
-	//public static double	PTM_ADD_PENALTY = 0.2;
-
-	//public static final	double	ANALYSIS_VERSION = 0.8;
-	
-
-
-	
 	public enum spectra_format {
 		PKL,		// read spectrums in SPECTRUM_FILE_NAME
 		DTA,		// read all dta file from SPECTRUM_FILE_NAME(compressed file)
