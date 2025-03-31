@@ -430,10 +430,10 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 		}
 		else {
 			double tempError = obsv - calc;
-			int isoerr = round( tempError / context.getIsotopeSpace() );
+			int isoerr = round( tempError / Constants.IsotopeSpace );
 
 			if( isoerr < Constants.minNoOfC13 || context.getMaxNoOfC13() < isoerr ) return false;
-			return !(Math.abs(tempError - isoerr * context.getIsotopeSpace()) > context.getPrecursorAccuracy());
+			return !(Math.abs(tempError - isoerr * Constants.IsotopeSpace) > context.getPrecursorAccuracy());
 		}
 	}
 

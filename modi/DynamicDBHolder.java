@@ -21,7 +21,7 @@ public class DynamicDBHolder {
 
         boolean specAnnotated = false;
         if (tcPool.size() != 0) {
-            specAnnotated = szer.interpretTagChain(Constants.variableModifications, tcPool, graph);
+            specAnnotated = szer.interpretTagChain(context.getVariableModifications(), tcPool, graph);
         }
 
         ArrayList<AnsPeptide> cands = new ArrayList<>();

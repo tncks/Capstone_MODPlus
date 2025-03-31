@@ -78,7 +78,7 @@ public class MSMScan {
         if (ppmTolerance != 0) context.setPrecursorAccuracy(PPMtoDalton(neutralMW, ppmTolerance));
 
 
-        context.setPrecursorTolerance(context.getPrecursorAccuracy() + context.getMaxNoOfC13() * context.getIsotopeSpace());
+        context.setPrecursorTolerance(context.getPrecursorAccuracy() + context.getMaxNoOfC13() * Constants.IsotopeSpace);
 
         int index = 0;
         Spectrum spectrum = new Spectrum(this.pmz, this.charge, this.title);
@@ -111,7 +111,7 @@ public class MSMScan {
         }
         spectrum.setExtraInformation(basePeakIntensity, TIC);
 
-        context.setGapTolerance(context.getFragmentTolerance() * 2);
+        context.setGapTolerance(Constants.fragmentTolerance * 2);
         if(context.getPrecursorTolerance() < context.getMassToleranceForDenovo()) context.setNonModifiedDelta(context.getPrecursorTolerance());
         else context.setNonModifiedDelta(context.getMassToleranceForDenovo());
 
@@ -142,26 +142,26 @@ public class MSMScan {
     private void removeReporterIons(ArrayList<RawPeak> rawPL, double[] removedMasses) {
         ArrayList<RawPeak> reporters = new ArrayList<>();
         for (int i = 1; i < removedMasses.length; i++) {
-            reporters.add(new RawPeak(removedMasses[i], context.getFragmentTolerance()));
+            reporters.add(new RawPeak(removedMasses[i], Constants.fragmentTolerance));
         }
 
-        reporters.add(new RawPeak(removedMasses[0] + context.getProton(), context.getFragmentTolerance()));
+        reporters.add(new RawPeak(removedMasses[0] + Constants.Proton, Constants.fragmentTolerance));
 
         int fragCS = 1;
         while (true) {
-            double compItraqTag = (this.neutralMW - removedMasses[0] + context.getProton() * fragCS) / fragCS;
+            double compItraqTag = (this.neutralMW - removedMasses[0] + Constants.Proton * fragCS) / fragCS;
 
-            double secondIso = compItraqTag + context.getIsotopeSpace() / fragCS;
-            double thirdIso = secondIso + context.getIsotopeSpace() / fragCS;
-            double forthIso = thirdIso + context.getIsotopeSpace() / fragCS;
+            double secondIso = compItraqTag + Constants.IsotopeSpace / fragCS;
+            double thirdIso = secondIso + Constants.IsotopeSpace / fragCS;
+            double forthIso = thirdIso + Constants.IsotopeSpace / fragCS;
 
-            reporters.add(new RawPeak(compItraqTag, context.getFragmentTolerance()));
-            reporters.add(new RawPeak(secondIso, context.getFragmentTolerance()));
-            reporters.add(new RawPeak(thirdIso, context.getFragmentTolerance()));
-            reporters.add(new RawPeak(forthIso, context.getFragmentTolerance()));
+            reporters.add(new RawPeak(compItraqTag, Constants.fragmentTolerance));
+            reporters.add(new RawPeak(secondIso, Constants.fragmentTolerance));
+            reporters.add(new RawPeak(thirdIso, Constants.fragmentTolerance));
+            reporters.add(new RawPeak(forthIso, Constants.fragmentTolerance));
 
             for (int i = 1; i <= context.getMaxNoOfC13(); i++) {
-                reporters.add(new RawPeak(compItraqTag - i * context.getIsotopeSpace() / fragCS, context.getFragmentTolerance()));
+                reporters.add(new RawPeak(compItraqTag - i * Constants.IsotopeSpace / fragCS, Constants.fragmentTolerance));
             }
             if (++fragCS >= this.charge) break;
         }

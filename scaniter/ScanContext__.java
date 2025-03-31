@@ -2,25 +2,25 @@ package scaniter;
 
 
 import modi.Constants;
+import modi.PTMDB;
 
 
 public class ScanContext__ {
-    private final double gapAccuracy;
-    private final double fragmentTolerance;
-    private final double massToleranceForDenovo;
-    private final double[] reporterMassOfIsobaricTag;
-    private final double proton;
-    private final double isotopeSpace;
-    private final double ppmTolerance;
-    private final int rangeForIsotopeIncrement;
-    private final int maxPTMPerPeptide;
-    private double nonModifiedDelta;
-    private double precursorTolerance;
-    private double precursorAccuracy;
-    private int    maxNoOfC13;
-    private double gapTolerance;
+
+    private final double[] reporterMassOfIsobaricTag;  // marked as ing. for now. (setSpectrum())
+    private final double ppmTolerance;  // marked as ing. for now. (setSpectrum())
+    private final int rangeForIsotopeIncrement;  // marked as ing. for now. (setSpectrum())
+    private double massToleranceForDenovo; //important marked
+    private double gapAccuracy; //important marked
+    private double nonModifiedDelta; //important marked
+    private double precursorTolerance; //important marked
+    private double precursorAccuracy; //important marked
+    private int maxNoOfC13; //important marked
+    private double gapTolerance; //important marked
     private double minModifiedMass;
     private double maxModifiedMass;
+    private PTMDB variableModifications;
+    private PTMDB fixedModifications;
     private ScanContext__(
             double precursorTolerance,
             double precursorAccuracy,
@@ -28,30 +28,25 @@ public class ScanContext__ {
             double gapAccuracy,
             double nonModifiedDelta,
             int maxNoOfC13,
-            double fragmentTolerance,
             double massToleranceForDenovo,
             double[] reporterMassOfIsobaricTag,
-            double proton,
-            double isotopeSpace,
             double ppmTolerance,
             int rangeForIsotopeIncrement,
-            int maxPTMPerPeptide, double minModifiedMass, double maxModifiedMass) {
+            double minModifiedMass, double maxModifiedMass, PTMDB variableModifications, PTMDB fixedModifications) {
         this.precursorTolerance = precursorTolerance;
         this.precursorAccuracy = precursorAccuracy;
         this.gapTolerance = gapTolerance;
         this.gapAccuracy = gapAccuracy;
         this.nonModifiedDelta = nonModifiedDelta;
         this.maxNoOfC13 = maxNoOfC13;
-        this.fragmentTolerance = fragmentTolerance;
         this.massToleranceForDenovo = massToleranceForDenovo;
         this.reporterMassOfIsobaricTag = reporterMassOfIsobaricTag;
-        this.proton = proton;
-        this.isotopeSpace = isotopeSpace;
         this.ppmTolerance = ppmTolerance;
         this.rangeForIsotopeIncrement = rangeForIsotopeIncrement;
-        this.maxPTMPerPeptide = maxPTMPerPeptide;
         this.minModifiedMass = minModifiedMass;
         this.maxModifiedMass = maxModifiedMass;
+        this.variableModifications = variableModifications;
+        this.fixedModifications = fixedModifications;
     }
 
     public static ScanContext__ fromConstants() {
@@ -62,15 +57,21 @@ public class ScanContext__ {
                 Constants.gapAccuracy,
                 Constants.nonModifiedDelta,
                 Constants.maxNoOfC13,
-                Constants.fragmentTolerance,
                 Constants.massToleranceForDenovo,
                 Constants.reporterMassOfIsobaricTag,
-                Constants.Proton,
-                Constants.IsotopeSpace,
                 Constants.PPMTolerance,
                 Constants.rangeForIsotopeIncrement,
-                Constants.maxPTMPerPeptide, Constants.minModifiedMass, Constants.maxModifiedMass
+                Constants.minModifiedMass, Constants.maxModifiedMass,
+                Constants.variableModifications, Constants.fixedModifications
         );
+    }
+
+    public PTMDB getVariableModifications() {
+        return variableModifications;
+    }
+
+    public PTMDB getFixedModifications() {
+        return fixedModifications;
     }
 
     public double getMinModifiedMass() {
@@ -118,6 +119,10 @@ public class ScanContext__ {
         return gapAccuracy;
     }
 
+    public void setGapAccuracy(double gapAccuracy) {
+        this.gapAccuracy = gapAccuracy;
+    }
+
     public double getNonModifiedDelta() {
         return nonModifiedDelta;
     }
@@ -134,24 +139,16 @@ public class ScanContext__ {
         this.maxNoOfC13 = maxNoOfC13;
     }
 
-    public double getFragmentTolerance() {
-        return fragmentTolerance;
-    }
-
     public double getMassToleranceForDenovo() {
         return massToleranceForDenovo;
     }
 
+    public void setMassToleranceForDenovo(double massToleranceForDenovo) {
+        this.massToleranceForDenovo = massToleranceForDenovo;
+    }
+
     public double[] getReporterMassOfIsobaricTag() {
         return reporterMassOfIsobaricTag;
-    }
-
-    public double getProton() {
-        return proton;
-    }
-
-    public double getIsotopeSpace() {
-        return isotopeSpace;
     }
 
     public double getPpmTolerance() {
@@ -162,26 +159,22 @@ public class ScanContext__ {
         return rangeForIsotopeIncrement;
     }
 
-    public int getMaxPTMPerPeptide() {
-        return maxPTMPerPeptide;
-    }
-
     // 새로운 값으로 업데이트된 ScanContext 반환하는 with 메서드
     public ScanContext__ withPrecursorTolerance(double precursorTolerance) {
         return new ScanContext__(
                 precursorTolerance, this.precursorAccuracy, this.gapTolerance, this.gapAccuracy,
-                this.nonModifiedDelta, this.maxNoOfC13, this.fragmentTolerance, this.massToleranceForDenovo,
-                this.reporterMassOfIsobaricTag, this.proton, this.isotopeSpace, this.ppmTolerance,
-                this.rangeForIsotopeIncrement, this.maxPTMPerPeptide, this.minModifiedMass, this.maxModifiedMass
+                this.nonModifiedDelta, this.maxNoOfC13, this.massToleranceForDenovo,
+                this.reporterMassOfIsobaricTag, this.ppmTolerance,
+                this.rangeForIsotopeIncrement, this.minModifiedMass, this.maxModifiedMass, this.variableModifications, this.fixedModifications
         );
     }
 
     public ScanContext__ withPrecursorAccuracy(double precursorAccuracy) {
         return new ScanContext__(
                 this.precursorTolerance, precursorAccuracy, this.gapTolerance, this.gapAccuracy,
-                this.nonModifiedDelta, this.maxNoOfC13, this.fragmentTolerance, this.massToleranceForDenovo,
-                this.reporterMassOfIsobaricTag, this.proton, this.isotopeSpace, this.ppmTolerance,
-                this.rangeForIsotopeIncrement, this.maxPTMPerPeptide, this.minModifiedMass, this.maxModifiedMass
+                this.nonModifiedDelta, this.maxNoOfC13, this.massToleranceForDenovo,
+                this.reporterMassOfIsobaricTag, this.ppmTolerance,
+                this.rangeForIsotopeIncrement, this.minModifiedMass, this.maxModifiedMass, this.variableModifications, this.fixedModifications
         );
     }
 
@@ -191,27 +184,27 @@ public class ScanContext__ {
     public ScanContext__ withMaxNoOfC13(int maxNoOfC13) {
         return new ScanContext__(
                 this.precursorTolerance, this.precursorAccuracy, this.gapTolerance, this.gapAccuracy,
-                this.nonModifiedDelta, maxNoOfC13, this.fragmentTolerance, this.massToleranceForDenovo,
-                this.reporterMassOfIsobaricTag, this.proton, this.isotopeSpace, this.ppmTolerance,
-                this.rangeForIsotopeIncrement, this.maxPTMPerPeptide, this.minModifiedMass, this.maxModifiedMass
+                this.nonModifiedDelta, maxNoOfC13, this.massToleranceForDenovo,
+                this.reporterMassOfIsobaricTag, this.ppmTolerance,
+                this.rangeForIsotopeIncrement, this.minModifiedMass, this.maxModifiedMass, this.variableModifications, this.fixedModifications
         );
     }
 
     public ScanContext__ withGapTolerance(double gapTolerance) {
         return new ScanContext__(
                 this.precursorTolerance, this.precursorAccuracy, gapTolerance, this.gapAccuracy,
-                this.nonModifiedDelta, this.maxNoOfC13, this.fragmentTolerance, this.massToleranceForDenovo,
-                this.reporterMassOfIsobaricTag, this.proton, this.isotopeSpace, this.ppmTolerance,
-                this.rangeForIsotopeIncrement, this.maxPTMPerPeptide, this.minModifiedMass, this.maxModifiedMass
+                this.nonModifiedDelta, this.maxNoOfC13, this.massToleranceForDenovo,
+                this.reporterMassOfIsobaricTag, this.ppmTolerance,
+                this.rangeForIsotopeIncrement, this.minModifiedMass, this.maxModifiedMass, this.variableModifications, this.fixedModifications
         );
     }
 
     public ScanContext__ withNonModifiedDelta(double nonModifiedDelta) {
         return new ScanContext__(
                 this.precursorTolerance, this.precursorAccuracy, this.gapTolerance, this.gapAccuracy,
-                nonModifiedDelta, this.maxNoOfC13, this.fragmentTolerance, this.massToleranceForDenovo,
-                this.reporterMassOfIsobaricTag, this.proton, this.isotopeSpace, this.ppmTolerance,
-                this.rangeForIsotopeIncrement, this.maxPTMPerPeptide, this.minModifiedMass, this.maxModifiedMass
+                nonModifiedDelta, this.maxNoOfC13, this.massToleranceForDenovo,
+                this.reporterMassOfIsobaricTag, this.ppmTolerance,
+                this.rangeForIsotopeIncrement, this.minModifiedMass, this.maxModifiedMass, this.variableModifications, this.fixedModifications
         );
     }
 

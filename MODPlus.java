@@ -434,7 +434,7 @@ public class MODPlus {
                         // ixPDB 참조: 코드에서 ixPDB가 여러 곳에서 참조되고 있는데, 이것이 공유 자원인 경우 동시 접근에 대한 처리가 필요할 수 있습니다
                         DPHeap heatedPepts = (new OneMOD()).getHeatedPeptides(ixPDB, graph, tPool, considerIsotopeErr, context);
                         DPHeap tepidPepts = null;
-                        if (context.getMaxPTMPerPeptide() > 1) {
+                        if (Constants.maxPTMPerPeptide > 1) {
                             if (heatedPepts == null || !heatedPepts.isConfident()) {
                                 tepidPepts = heatedPepts;
                                 heatedPepts = (new MultiMOD()).getHeatedPeptides(ixPDB, graph, tPool, dynamicPMCorrection, context);
