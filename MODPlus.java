@@ -1,6 +1,7 @@
 import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 import moda.DPPeptide;
 import modi.*;
@@ -319,10 +320,7 @@ public class MODPlus {
         }
 
         try {
-            Constants.MAX_TAG_SIZE = 100;
-            Constants.minTagLength = 2;
-            Constants.minTagLengthPeptideShouldContain = 3;
-            Constants.tagChainPruningRate = 0.4;
+
             File analPath = new File(Constants.SPECTRUM_LOCAL_PATH);
             if (analPath.isDirectory()) {
                 String type = Constants.SPECTRA_FILE_TYPE.toString().toLowerCase();

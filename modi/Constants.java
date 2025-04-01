@@ -146,6 +146,10 @@ public class Constants {
                 if (fixedOff < Constants.minModifiedMass) Constants.minModifiedMass = fixedOff;
             }
         }
+        Constants.MAX_TAG_SIZE = 100;
+        Constants.minTagLength = 2;
+        Constants.minTagLengthPeptideShouldContain = 3;
+        Constants.tagChainPruningRate = 0.4;
     }
 
 

@@ -387,15 +387,17 @@ public class PTMDB extends ArrayList<PTM> {
             newGapInterpret.add(run);
         }
 
-        //////////////////
-        RecursionContext context = threadLocalContext.get(); //////////////////
-        context.initialize(seq, massDiff, position, newGapInterpret); //////////////////
 
-        context.findPTM_DFS(0.0, 0, 0, 0); //////////////////
+        RecursionContext context = threadLocalContext.get();
+        context.initialize(seq, massDiff, position, newGapInterpret);
+
+        context.findPTM_DFS(0.0, 0, 0, 0);
 
         searchResult = new PTMSearchResult(newGapInterpret, newGapInterpret != null && !newGapInterpret.isEmpty());
 
-        resultCache.put(key, searchResult); //////////////////
+        resultCache.put(key, searchResult);
+
+        //threadLocalContext.remove(); <--- remove() 추가
 
         return searchResult;
     }
