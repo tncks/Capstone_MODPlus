@@ -22,7 +22,6 @@ public class MSMScan {
 	private final double 		neutralMW;
 	private final int 		charge;
 	private Spectrum 	peaklist;
-	private static final double tolerance= Mutables.massToleranceForDenovo;
 
 	private double 	precursorTolerance = 0;
 	private double 	precursorAccuracy= 0;
@@ -52,7 +51,7 @@ public class MSMScan {
 	}
 
 	public Spectrum getSpectrum() { 
-		Mutables.precursorTolerance= precursorTolerance;
+		Mutables.precursorTolerance = precursorTolerance;
 		Mutables.precursorAccuracy	= precursorAccuracy;
 		Mutables.gapTolerance 		= gapTolerance;
 		Mutables.gapAccuracy 		= precursorAccuracy + 2*Mutables.fragmentTolerance;
@@ -86,7 +85,7 @@ public class MSMScan {
 			if( intensity <= 0 || mass <= 0 ) continue;
 			if( mass > neutralMW ) continue;
 			
-			if( ( mass - tarMass ) < tolerance ){
+			if( ( mass - tarMass ) < Mutables.massToleranceForDenovo ){
 				double sum = tarInten + intensity;
 				tarMass = tarMass*(tarInten/sum)+ mass*(intensity/sum);
 				tarInten += intensity;

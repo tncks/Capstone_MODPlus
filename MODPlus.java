@@ -378,7 +378,7 @@ public class MODPlus {
 
                     for(int t=0; t<spectrum.size(); t++){
                         if( Math.abs(spectrum.get(t).getMass() - spectrum.getPrecursor() ) < 2 ) {
-                            spectrum.remove(t);
+                            spectrum.remove(t); ///////////////////////////////////////////////////////////
                             t--;
                             continue;
                         }

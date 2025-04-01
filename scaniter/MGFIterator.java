@@ -28,6 +28,7 @@ public class MGFIterator extends ScanIterator {
 
 	// single thread -> multi thread issue can occur here due to MSMScan
 	public ArrayList<MSMScan> getNext() throws IOException {
+		System.out.println("begin ion(debug)");
 		
 		ArrayList<MSMScan> scanlist = new ArrayList<>();
 		MSMScan curScan;
@@ -78,7 +79,7 @@ public class MGFIterator extends ScanIterator {
 						StringTokenizer token = new StringTokenizer(buf.substring(buf.indexOf("=")+1));
 						if( token.countTokens() != 0 ) scanNo = Integer.parseInt( token.nextToken() );
 					}
-				}
+				}//
 				
 				ArrayList<RawPeak> rawPL = new ArrayList<>();
 				do {
@@ -105,8 +106,12 @@ public class MGFIterator extends ScanIterator {
 				break;
 			}	
 		}
+		System.out.println("end ion(debug)");
 		return scanlist;
 	}
-	
+
+	public void getWholeNext() {
+
+	}
 }
 
