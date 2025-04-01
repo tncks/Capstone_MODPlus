@@ -2,9 +2,6 @@ package moda;
 
 import modi.*;
 import msutil.PGraph;
-import processedDB.HeatedDB;
-import processedDB.ProtDatabase;
-import processedDB.StemTagTrie;
 import processedDB.TagTrie;
 
 import java.util.ArrayList;

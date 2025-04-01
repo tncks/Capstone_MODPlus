@@ -110,7 +110,7 @@ public class MGFIterator extends ScanIterator {
 		//System.out.println("end ion(debug)");
 
 
-		System.out.println("MODPlus | " + (dbg++) + "/");
+		//System.out.println("MODPlus | " + (dbg++) + "/");
 		return scanlist;
 	}
 

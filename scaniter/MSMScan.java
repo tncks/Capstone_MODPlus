@@ -50,8 +50,6 @@ public class MSMScan {
 	private int		maxNoOfC13 = 0;
 
 
-	// constructor invocation usage from Iterator
-	// where: public ArrayList<MSMScan> getNext() { ... } at MGFIterator.java
 	public MSMScan(int index, double pmz, int charge){
 		this.title 		= "";
 		this.specIndex	= index;
