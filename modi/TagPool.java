@@ -64,8 +64,8 @@ public class TagPool extends ArrayList<Tag> {
 		for(int i=refinedList.size()-1; i>=0 && selectedTagSize<=size; i--) {
 			Tag curTag = refinedList.get(i);
 			selectedTagSize++;
-			if( (Constants.Leu_indistinguishable_Ile && curTag.sequence().contains(AminoAcid.getAminoAcid('I'))) ||
-					(Constants.Lys_indistinguishable_Qln && curTag.sequence().contains(AminoAcid.getAminoAcid('K'))) )
+			if( (Mutables.Leu_indistinguishable_Ile && curTag.sequence().contains(AminoAcid.getAminoAcid('I'))) ||
+					(Mutables.Lys_indistinguishable_Qln && curTag.sequence().contains(AminoAcid.getAminoAcid('K'))) )
 				selectedTagSize--;			
 			extracted.add( curTag );
 		}	

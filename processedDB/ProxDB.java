@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import modi.Constants;
+import modi.Mutables;
 
 public class ProxDB extends ArrayList<Prox> {
 	
@@ -80,7 +81,7 @@ public class ProxDB extends ArrayList<Prox> {
 		sizeOfResidues = residues;	
 		System.out.println( sizeOfEntries+" proteins / "  + sizeOfResidues+" residues" );
 		
-		if( Constants.targetDecoy == 1 ){
+		if( Mutables.targetDecoy == 1 ){
 			System.out.print("Decoy search checked.....  ");
 
 			for(int i=0; i<sizeOfEntries; i++){

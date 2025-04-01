@@ -2,6 +2,7 @@ package moda;
 
 import java.util.ArrayList;
 
+import modi.Mutables;
 import processedDB.CandidateContainer;
 import processedDB.ChainTagPeptide;
 import processedDB.SequenceTag;
@@ -114,13 +115,13 @@ public class MultiMOD {
             cpi = colMax;
             for(int j=entry.getEnd(); j>=entry.getRight(); j--) {// MODPLUS
 
-                int noOfET = ixPDB.getNTTOfPeptide(i, j, Constants.protease );
-                if( noOfET >= Constants.numberOfEnzymaticTermini )
+                int noOfET = ixPDB.getNTTOfPeptide(i, j, Mutables.protease );
+                if( noOfET >= Mutables.numberOfEnzymaticTermini )
                 {
                     double massRange = deltas[rowMax-1] + nTermDeletion + cTermDeletion;
 
-                    if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Constants.precursorTolerance )
+                    if( (massRange < Mutables.maxModifiedMass && massRange > Mutables.minModifiedMass) ||
+                            Math.abs(massRange) < Mutables.precursorTolerance )
                     {
                         double[] ptms = new double[rowMax];
                         int[] intptms = new int[rowMax];
@@ -138,7 +139,7 @@ public class MultiMOD {
                             specMatrix[m][npi].refresh();
                         }
 
-                        double cellMass = Constants.NTERM_FIX_MOD;
+                        double cellMass = Mutables.NTERM_FIX_MOD;
                         for(int n=npi+1 ; n<cpi ; n++){
                             cellMass += MSMass.getAAMass(peptide.charAt(n-1));
                             for(int m=0 ; m<rowMax ; m++){
@@ -147,7 +148,7 @@ public class MultiMOD {
                             }
                         }
                         for(int m=0 ; m<rowMax ; m++){
-                            specMatrix[m][cpi-1].mass += Constants.CTERM_FIX_MOD;
+                            specMatrix[m][cpi-1].mass += Mutables.CTERM_FIX_MOD;
                         }
 
                         temp = dynamicProgramming(peptide.substring(npi, cpi-1), observedMass-pmzErr, rowMax, npi, cpi,
@@ -207,12 +208,12 @@ public class MultiMOD {
             cpi = colMax;
             for(int j=entry.getEnd(); j>=entry.getRight(); j--) {
 
-                int noOfET = ixPDB.getNTTOfPeptide(i, j, Constants.protease );
-                if( noOfET >= Constants.numberOfEnzymaticTermini )
+                int noOfET = ixPDB.getNTTOfPeptide(i, j, Mutables.protease );
+                if( noOfET >= Mutables.numberOfEnzymaticTermini )
                 {
                     double massRange = deltas[rowMax-1] + nTermDeletion + cTermDeletion;
-                    if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Constants.precursorTolerance )
+                    if( (massRange < Mutables.maxModifiedMass && massRange > Mutables.minModifiedMass) ||
+                            Math.abs(massRange) < Mutables.precursorTolerance )
                     {
                         double[] ptms = new double[rowMax];
                         int[] intptms = new int[rowMax];
@@ -234,7 +235,7 @@ public class MultiMOD {
                             specMatrix[m][npi].refresh();
                         }
 
-                        double cellMass = Constants.NTERM_FIX_MOD;
+                        double cellMass = Mutables.NTERM_FIX_MOD;
                         for(int n=npi+1 ; n<cpi ; n++){
                             cellMass += MSMass.getAAMass(peptide.charAt(n-1));
                             for(int m=0 ; m<rowMax ; m++){
@@ -243,7 +244,7 @@ public class MultiMOD {
                             }
                         }
                         for(int m=0 ; m<rowMax ; m++){
-                            specMatrix[m][cpi-1].mass += Constants.CTERM_FIX_MOD;
+                            specMatrix[m][cpi-1].mass += Mutables.CTERM_FIX_MOD;
                         }
 
                         temp = DPwithMassCorrection(peptide.substring(npi, cpi-1), observedMass-pmzErr, rowMax, npi, cpi,
@@ -291,7 +292,7 @@ public class MultiMOD {
 
         int colMax= smEnd-smStart;
 
-        double upperLimit = obsMass+Constants.fragmentTolerance;
+        double upperLimit = obsMass+Mutables.fragmentTolerance;
         specMatrix[0][smStart].isAAJump= 1;
 
         MatCell currNode, prevNode;
@@ -318,7 +319,7 @@ public class MultiMOD {
                     else{ // Modification Jump
                         if( currNode.canObliqueJumpFrom(prevNode) ){
                             if( currNode.mass - prevNode.mass < MODaConst.minimumDistance ||
-                                    currNode.nominalDelta - prevNode.nominalDelta > Constants.maxModifiedMass  ) continue;
+                                    currNode.nominalDelta - prevNode.nominalDelta > Mutables.maxModifiedMass  ) continue;
 
                             double prev = ( currNode.nominalDelta == prevNode.nominalDelta ) ? prevNode.score : prevNode.score - Constants.rNorm[0];
                             if( max < prev ){
@@ -358,7 +359,7 @@ public class MultiMOD {
         double PMCorr = obsMass+Constants.H2O;
         while( forward < backward ){
             double symmetric = matchedList[forward] + matchedList[backward];
-            if( Constants.fEqual(symmetric, PMCorr) ){
+            if( Mutables.fEqual(symmetric, PMCorr) ){
                 idScore -= prmTable.getScore( matchedList[forward], pmzErr );
                 symMatch++;
                 forward++;
@@ -385,12 +386,12 @@ public class MultiMOD {
                                                    MatCell[][] specMatrix, PRM prmTable, double pmzErr){
 
         int colMax= smEnd-smStart, endingTag= rowMax-1;
-        if( specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass ) return null;
+        if( specMatrix[endingTag][smStart].nominalDelta > Mutables.maxModifiedMass ) return null;
         for(int n=smStart ; n<smEnd ; n++){
             specMatrix[endingTag][n].refresh();
         }
 
-        double upperLimit = obsMass+Constants.fragmentTolerance;
+        double upperLimit = obsMass+Mutables.fragmentTolerance;
         specMatrix[0][smStart].isAAJump= 1;
 
         MatCell currNode, prevNode;
@@ -448,7 +449,7 @@ public class MultiMOD {
         double PMCorr = obsMass+Constants.H2O;
         while( forward < backward ){
             double symmetric = matchedList[forward] + matchedList[backward];
-            if( Constants.fEqual(symmetric, PMCorr) ){
+            if( Mutables.fEqual(symmetric, PMCorr) ){
                 idScore -= prmTable.getScore( matchedList[forward], pmzErr );
                 forward++;
                 backward--;

@@ -211,7 +211,7 @@ public class Gap implements SpecInterpretation {
 	{
 		ArrayList<Peak> theoPeaks = this.getTheoreticalPeaks(run);
 		
-		double score = ( run.getError() > Constants.fragmentTolerance )? -0.5 : 0;
+		double score = ( run.getError() > Mutables.fragmentTolerance )? -0.5 : 0;
 
 		// inefficient
 		int classification = FragmentationPattern.getClassification(sourceSpectrum, matchedPeptide);
@@ -234,7 +234,7 @@ public class Gap implements SpecInterpretation {
 	}
 	
 	public boolean isReasonable(){
-		if( !Constants.isInModifiedRange( this.offset ) ) return false;	
+		if( !Mutables.isInModifiedRange( this.offset ) ) return false;
 		
 	//	if ( this.offset > 0 ) return true;
 
@@ -242,10 +242,10 @@ public class Gap implements SpecInterpretation {
 		if( start == 0 ) pos = 1;
 		if( end+1 == matchedPeptide.size() ) pos = 2;
 		Sequence seq = matchedPeptide.subSequence(start, end+1);
-		double minMod = Constants.variableModifications.minimumModifiedMass(seq, pos);		
-		double maxMod = Constants.variableModifications.maximumModifiedMass(seq, pos);		
+		double minMod = Mutables.variableModifications.minimumModifiedMass(seq, pos);
+		double maxMod = Mutables.variableModifications.maximumModifiedMass(seq, pos);
 	//	System.out.println( this.offset + " " + maxMod + " " +minMod + " " + matchedPeptide.subSequence(start, end+1));
-        return !(this.offset < (minMod - Constants.gapTolerance)) && !(this.offset > (maxMod + Constants.gapTolerance));//*/
+        return !(this.offset < (minMod - Mutables.gapTolerance)) && !(this.offset > (maxMod + Mutables.gapTolerance));//*/
     }
 
 	public double getScore(PTMRun run, PGraph graph)

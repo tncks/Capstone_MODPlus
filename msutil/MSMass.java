@@ -1,6 +1,7 @@
 package msutil;
 
 import modi.Constants;
+import modi.Mutables;
 
 public class MSMass {
 	private static double minAAMass = 57.02146;
@@ -39,7 +40,7 @@ public class MSMass {
 	}
 	
 	public static boolean isIndistinguishableAA(char a, char b){
-        return Math.abs(aaMass[a - 'A'] - aaMass[b - 'A']) <= Constants.massToleranceForDenovo;
+        return Math.abs(aaMass[a - 'A'] - aaMass[b - 'A']) <= Mutables.massToleranceForDenovo;
     }
 }
 

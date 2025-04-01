@@ -1,6 +1,7 @@
 package msutil;
 
 import modi.Constants;
+import modi.Mutables;
 
 import java.util.Arrays;
 
@@ -45,7 +46,7 @@ public class ProtCutter {
 
         if (!isEnzyme) {
             Arrays.fill(cleaveMap, C_TERM);
-            Constants.numberOfEnzymaticTermini = 0;
+            Mutables.numberOfEnzymaticTermini = 0;
         } else {
             for (int i = 0; i < nTermCleave.length(); i++) {
                 cleaveMap[nTermCleave.charAt(i) - 'A'] = N_TERM;

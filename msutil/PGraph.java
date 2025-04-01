@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import modi.Constants;
+import modi.Mutables;
 
 @SuppressWarnings("unused")
 public class PGraph extends ArrayList<PNode>{
@@ -43,7 +44,7 @@ public class PGraph extends ArrayList<PNode>{
 	public double correctMW( boolean dynamicCorrection ){ 
 		
 		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) return obsvMW;				
-		if( Constants.precursorTolerance <= Constants.fragmentTolerance ) return obsvMW;	
+		if( Mutables.precursorTolerance <= Mutables.fragmentTolerance ) return obsvMW;	
 		
 		PRM prmTable;
 		if( charge > 2 ) prmTable= new PRMforHighCharge(this);
@@ -141,10 +142,10 @@ public class PGraph extends ArrayList<PNode>{
 	public PNode getMatchedPNode( double mz ){
 		double it=0;
 		PNode anno = null;
-		int id= binarySearch( mz- Constants.fragmentTolerance );
-		if( this.get(id).getMass() < (mz - Constants.fragmentTolerance) ) return anno;
+		int id= binarySearch( mz- Mutables.fragmentTolerance );
+		if( this.get(id).getMass() < (mz - Mutables.fragmentTolerance) ) return anno;
 		
-		while( this.get(id).getMass() <= mz + Constants.fragmentTolerance ){
+		while( this.get(id).getMass() <= mz + Mutables.fragmentTolerance ){
 			if( this.get(id).getNorm() > it ){
 				it = this.get(id).getNorm();
 				anno = this.get(id);
@@ -164,10 +165,10 @@ public class PGraph extends ArrayList<PNode>{
 	public double getNormOfMatchedPeak( double mz, int rank ){
 		double it=0;
 		int anno = -1;
-		int id= binarySearch( mz- Constants.fragmentTolerance );
-		if( this.get(id).getMass() < (mz - Constants.fragmentTolerance) ) return it;
+		int id= binarySearch( mz- Mutables.fragmentTolerance );
+		if( this.get(id).getMass() < (mz - Mutables.fragmentTolerance) ) return it;
 
-		while( this.get(id).getMass() <= mz + Constants.fragmentTolerance ){
+		while( this.get(id).getMass() <= mz + Mutables.fragmentTolerance ){
 			if( this.get(id).getNorm() > it ){
 				it = this.get(id).getNorm();
 				anno = id;
@@ -212,10 +213,10 @@ public class PGraph extends ArrayList<PNode>{
 	public int getIndexOfMatchedPeak(double mz, double err, String type){
 		double it=0;
 		int anno = -1;
-		int id= binarySearch( mz- Constants.fragmentTolerance );
-		if( this.get(id).getMass() < (mz - Constants.fragmentTolerance) ) return anno;
+		int id= binarySearch( mz- Mutables.fragmentTolerance );
+		if( this.get(id).getMass() < (mz - Mutables.fragmentTolerance) ) return anno;
 		
-		while( this.get(id).getMass() <= mz+err+ Constants.fragmentTolerance ){
+		while( this.get(id).getMass() <= mz+err+ Mutables.fragmentTolerance ){
 			if( this.get(id).getIntensity() > it ){
 				it = this.get(id).getIntensity();
 				anno = id;
@@ -255,13 +256,13 @@ public class PGraph extends ArrayList<PNode>{
 	}
 	
 	private int getPosition( double mz ){
-		double delta=Constants.fragmentTolerance+1;
+		double delta=Mutables.fragmentTolerance+1;
 		int anno = -1;
-		int id= binarySearch( mz- Constants.fragmentTolerance );
-		if( this.get(id).getMass() < (mz - Constants.fragmentTolerance) ) {		
+		int id= binarySearch( mz- Mutables.fragmentTolerance );
+		if( this.get(id).getMass() < (mz - Mutables.fragmentTolerance) ) {
 			return anno;
 		}
-		while( this.get(id).getMass() <= mz + Constants.fragmentTolerance ){
+		while( this.get(id).getMass() <= mz + Mutables.fragmentTolerance ){
 			if( Math.abs(this.get(id).mass-mz) < delta ){
 				delta = Math.abs(this.get(id).mass - mz);
 				anno = id;
@@ -310,8 +311,8 @@ public class PGraph extends ArrayList<PNode>{
 		double okmax = 0;
 		targetmz= ionMZ-isotopeDelta;
 		for(int i=peak-1; i>-1; i--){
-			if( this.get(i).getMass() < targetmz-Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() < targetmz-Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > okmax ){
 					okmax = this.get(i).getIntensity();
 				//	OK = i;
@@ -329,8 +330,8 @@ public class PGraph extends ArrayList<PNode>{
 			int H = -1;
 			double imax = 0;				
 			for(int i=ISO; i<this.size(); i++){
-				if( this.get(i).getMass() > targetmz+Constants.massToleranceForDenovo ) break;			
-				else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+				if( this.get(i).getMass() > targetmz+Mutables.massToleranceForDenovo ) break;			
+				else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 					if( this.get(i).getIntensity() > imax ) {
 						imax = this.get(i).getIntensity();
 						H = i;
@@ -353,15 +354,15 @@ public class PGraph extends ArrayList<PNode>{
 		double lossmax=0, lossmz=0;
 		targetmz= ionMZ-H2ODelta;
 		for(int i=peak-1; i>-1; i--){
-			if( this.get(i).getMass() < targetmz-Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()-(ionMZ-NH3Delta)) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() < targetmz-Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()-(ionMZ-NH3Delta)) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > lossmax ) {
 					lossmax = this.get(i).getIntensity();
 					lossmz = this.get(i).getMass();
 					NLOSS = i;
 				}
 			}
-			else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+			else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > lossmax ) {
 					lossmax = this.get(i).getIntensity();
 					lossmz = this.get(i).getMass();
@@ -380,8 +381,8 @@ public class PGraph extends ArrayList<PNode>{
 				double nsmax = 0;
 				targetmz= lossmz+isotopeDelta;
 				for(int i=NLOSS+1; i<this.size(); i++){
-					if( this.get(i).getMass() > targetmz+Constants.massToleranceForDenovo ) break;			
-					else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+					if( this.get(i).getMass() > targetmz+Mutables.massToleranceForDenovo ) break;			
+					else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 						if( this.get(i).getIntensity() > nsmax ) {
 							nsmax = this.get(i).getIntensity();
 							NL_H = i;
@@ -411,8 +412,8 @@ public class PGraph extends ArrayList<PNode>{
 		double okmax = 0;
 		targetmz= ionMZ-isotopeDelta;
 		for(int i=peak-1; i>-1; i--){
-			if( this.get(i).getMass() < targetmz-Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() < targetmz-Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > okmax ) {
 					okmax = this.get(i).getIntensity();
 					OK = i;
@@ -433,8 +434,8 @@ public class PGraph extends ArrayList<PNode>{
 			int H = -1;
 			double imax = 0;				
 			for(int i=ISO; i<this.size(); i++){
-				if( this.get(i).getMass() > targetmz+Constants.massToleranceForDenovo ) break;			
-				else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+				if( this.get(i).getMass() > targetmz+Mutables.massToleranceForDenovo ) break;			
+				else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 					if( this.get(i).getIntensity() > imax ) {
 						imax = this.get(i).getIntensity();
 						H = i;
@@ -458,15 +459,15 @@ public class PGraph extends ArrayList<PNode>{
 		double lossmax=0, lossmz=0;
 		targetmz= ionMZ-H2ODelta;
 		for(int i=peak-1; i>-1; i--){
-			if( this.get(i).getMass() < targetmz-Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()-(ionMZ-NH3Delta)) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() < targetmz-Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()-(ionMZ-NH3Delta)) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > lossmax ) {
 					lossmax = this.get(i).getIntensity();
 					lossmz = this.get(i).getMass();
 					NLOSS = i;
 				}
 			}
-			else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+			else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > lossmax ) {
 					lossmax = this.get(i).getIntensity();
 					lossmz = this.get(i).getMass();
@@ -481,8 +482,8 @@ public class PGraph extends ArrayList<PNode>{
 			double nsmax = 0;
 			targetmz= lossmz+isotopeDelta;
 			for(int i=NLOSS+1; i<this.size(); i++){
-				if( this.get(i).getMass() > targetmz+Constants.massToleranceForDenovo ) break;			
-				else if( Math.abs(this.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+				if( this.get(i).getMass() > targetmz+Mutables.massToleranceForDenovo ) break;			
+				else if( Math.abs(this.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 					if( this.get(i).getIntensity() > nsmax ) {
 						nsmax = this.get(i).getIntensity();
 						NL_H = i;
@@ -509,8 +510,8 @@ public class PGraph extends ArrayList<PNode>{
 		int OK = -1;    	
 		double okmax = 0;
 		for(int i=peak-1; i>-1; i--){
-			if( this.get(i).getMass() < ionMZ-1-Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()- (ionMZ-1)) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() < ionMZ-1-Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()- (ionMZ-1)) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > okmax ) {
 					okmax = this.get(i).getIntensity();
 					OK = i;
@@ -522,8 +523,8 @@ public class PGraph extends ArrayList<PNode>{
 		int H = -1; // plus isotope peak    	
 		double imax = 0;
 		for(int i=peak+1; i<this.size(); i++){
-			if( this.get(i).getMass() > ionMZ+1+Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()- (ionMZ+1)) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() > ionMZ+1+Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()- (ionMZ+1)) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > imax ) {
 					imax = this.get(i).getIntensity();
 					H = i;
@@ -538,14 +539,14 @@ public class PGraph extends ArrayList<PNode>{
 		int H2O = -1, NH3 = -1;    	
 		double hmax=0, nmax=0;
 		for(int i=peak-1; i>-1; i--){
-			if( this.get(i).getMass() < ionMZ-Constants.H2O-Constants.massToleranceForDenovo ) break;			
-			else if( Math.abs(this.get(i).getMass()- (ionMZ-Constants.NH3)) < Constants.massToleranceForDenovo ){
+			if( this.get(i).getMass() < ionMZ-Constants.H2O-Mutables.massToleranceForDenovo ) break;			
+			else if( Math.abs(this.get(i).getMass()- (ionMZ-Constants.NH3)) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > nmax ) {
 					nmax = this.get(i).getIntensity();
 					NH3 = i;
 				}
 			}
-			else if( Math.abs(this.get(i).getMass()- (ionMZ-Constants.H2O)) < Constants.massToleranceForDenovo ){
+			else if( Math.abs(this.get(i).getMass()- (ionMZ-Constants.H2O)) < Mutables.massToleranceForDenovo ){
 				if( this.get(i).getIntensity() > hmax ) {
 					hmax = this.get(i).getIntensity();
 					H2O = i;

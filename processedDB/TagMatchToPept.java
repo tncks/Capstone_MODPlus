@@ -1,6 +1,7 @@
 package processedDB;
 
 import modi.IonDirection;
+import modi.Mutables;
 import modi.Tag;
 import modi.Constants;
 
@@ -24,7 +25,7 @@ public class TagMatchToPept implements Comparable<TagMatchToPept> {
 
 	public boolean extendable(TagMatchToPept x){
 		
-		if( Constants.fEqual(this.nGap, x.nGap) ){
+		if( Mutables.fEqual(this.nGap, x.nGap) ){
             return x.staSite >= this.staSite && x.staSite <= this.endSite + 1;
 		}		
 		return false;

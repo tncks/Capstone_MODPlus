@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
+import modi.Constants;
+import modi.Mutables;
 
 import msutil.PGraph;
 import msutil.PNode;
@@ -60,7 +62,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		Peak result = new Peak(-1, -1, 0);
 		for(Peak p : this)
 		{
-			if(Constants.fEqual(mass, p.getMass()) && p.getIntensity() > result.getIntensity())
+			if(Mutables.fEqual(mass, p.getMass()) && p.getIntensity() > result.getIntensity())
 				result = p;
 		}
 		
@@ -94,7 +96,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		
 		int binSize= 100, considered= 10;
 		double minimumCut= bpIntensity*0.001;
-		double precursoeRange= Constants.precursorTolerance/this.charge + Constants.fragmentTolerance;
+		double precursoeRange= Mutables.precursorTolerance/this.charge + Mutables.fragmentTolerance;
 		
 		PGraph graph = new PGraph(this.observedMW, charge);
 		
@@ -295,13 +297,13 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			}
 		}
 		
-		selected.add(new Peak(-1, Constants.B_ION_OFFSET+Constants.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_B_ION_ONLY));
-		selected.add(new Peak(-1, Constants.Y_ION_OFFSET+Constants.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_Y_ION_ONLY));
-		selected.add(new Peak(-1, correctedMW-Constants.H2O+Constants.Proton-Constants.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_B_ION_ONLY));
-		selected.add(new Peak(-1, correctedMW+Constants.Proton-Constants.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_Y_ION_ONLY));
+		selected.add(new Peak(-1, Constants.B_ION_OFFSET+Mutables.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_B_ION_ONLY));
+		selected.add(new Peak(-1, Constants.Y_ION_OFFSET+Mutables.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_Y_ION_ONLY));
+		selected.add(new Peak(-1, correctedMW-Constants.H2O+Constants.Proton-Mutables.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_B_ION_ONLY));
+		selected.add(new Peak(-1, correctedMW+Constants.Proton-Mutables.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_Y_ION_ONLY));
 
 		selectedPeak = new ArrayList<>(selected);
-		setScoreOfSelectedPeaks(selectedPeak, 1, Constants.massToleranceForDenovo);
+		setScoreOfSelectedPeaks(selectedPeak, 1, Mutables.massToleranceForDenovo);
 
         return selectedPeak.size();
 	}	
@@ -430,9 +432,9 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		for(int j=virB0; j<selectedPeak.size(); j++){
 			
 			double diff = b2mz - selectedPeak.get(j).getMass();			
-			if( diff < -Constants.fragmentTolerance ) break;
+			if( diff < -Mutables.fragmentTolerance ) break;
 			
-			if( Math.abs(diff) <= Constants.fragmentTolerance ){
+			if( Math.abs(diff) <= Mutables.fragmentTolerance ){
 			//	System.out.println(name + " | " + b2mz);
 				Peak virtualPeak = new Peak(-1, b2mz - seq.getMonoMass(1, 2), 0, 1, PeakProperty.VIRTUAL_PEAK);
 				virtualPeak.setNormIntensity(0);
@@ -472,11 +474,11 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 	public double getMatchedPeak( double mz ){
 		double it=0;
 
-		int id= binarySearchforPeaks( mz- Constants.fragmentTolerance );
-		if( this.get(id).getMass() < mz - Constants.fragmentTolerance )
+		int id= binarySearchforPeaks( mz- Mutables.fragmentTolerance );
+		if( this.get(id).getMass() < mz - Mutables.fragmentTolerance )
 			return it;
 		
-		while( this.get(id).getMass() <= mz + Constants.fragmentTolerance )
+		while( this.get(id).getMass() <= mz + Mutables.fragmentTolerance )
 		{
 			if( this.get(id).getNormIntensity() > it )
 				it = this.get(id).getNormIntensity();		
@@ -609,8 +611,8 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 				int H = -1;
 				double imax = 0;				
 				for(int i=ISO; i<selected.size(); i++){
-					if( selected.get(i).getMass() > targetmz+Constants.massToleranceForDenovo ) break;			
-					else if( Math.abs(selected.get(i).getMass()-targetmz) < Constants.massToleranceForDenovo ){
+					if( selected.get(i).getMass() > targetmz+Mutables.massToleranceForDenovo ) break;
+					else if( Math.abs(selected.get(i).getMass()-targetmz) < Mutables.massToleranceForDenovo ){
 						if( selected.get(i).getIntensity() > imax ) {
 							imax = selected.get(i).getIntensity();
 							H = i;

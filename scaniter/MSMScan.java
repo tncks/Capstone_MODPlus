@@ -2,16 +2,17 @@ package scaniter;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
+import moda.MODaConst;
 
 import modi.Constants;
+import modi.Mutables;
 import modi.Peak;
 import modi.Spectrum;
 import msutil.MSMass;
 
 public class MSMScan {
 	
-	static final int minPeaksCount = 4;
+
 	static final double minMW = 8 * MSMass.getMinAAMass() + 18;
 	
 	private final String 		title;
@@ -21,7 +22,7 @@ public class MSMScan {
 	private final double 		neutralMW;
 	private final int 		charge;
 	private Spectrum 	peaklist;
-	private static final double tolerance= Constants.massToleranceForDenovo;
+	private static final double tolerance= Mutables.massToleranceForDenovo;
 
 	private double 	precursorTolerance = 0;
 	private double 	precursorAccuracy= 0;
@@ -51,26 +52,26 @@ public class MSMScan {
 	}
 
 	public Spectrum getSpectrum() { 
-		Constants.precursorTolerance= precursorTolerance;
-		Constants.precursorAccuracy	= precursorAccuracy;
-		Constants.gapTolerance 		= gapTolerance;
-		Constants.gapAccuracy 		= precursorAccuracy + 2*Constants.fragmentTolerance;
-		Constants.nonModifiedDelta 	= nonModifiedDelta;
-		Constants.maxNoOfC13 		= maxNoOfC13;
+		Mutables.precursorTolerance= precursorTolerance;
+		Mutables.precursorAccuracy	= precursorAccuracy;
+		Mutables.gapTolerance 		= gapTolerance;
+		Mutables.gapAccuracy 		= precursorAccuracy + 2*Mutables.fragmentTolerance;
+		Mutables.nonModifiedDelta 	= nonModifiedDelta;
+		Mutables.maxNoOfC13 		= maxNoOfC13;
 		return peaklist; 
 	}
 
 	public boolean setSpectrum(ArrayList<RawPeak> rawPL) {
 		
-		if( neutralMW < minMW || Constants.maxPeptideMass < neutralMW ) return false; 
+		if( neutralMW < minMW || Constants.maxPeptideMass < neutralMW ) return false;
 				
-		if( Constants.reporterMassOfIsobaricTag != null ) removeReporterIons(rawPL, Constants.reporterMassOfIsobaricTag);
+		if( Mutables.reporterMassOfIsobaricTag != null ) removeReporterIons(rawPL, Mutables.reporterMassOfIsobaricTag);
 		
-		if( Constants.rangeForIsotopeIncrement != 0 ) maxNoOfC13 = (int)Math.ceil( neutralMW / Constants.rangeForIsotopeIncrement );
-		else maxNoOfC13 = Constants.maxNoOfC13;
+		if( Mutables.rangeForIsotopeIncrement != 0 ) maxNoOfC13 = (int)Math.ceil( neutralMW / Mutables.rangeForIsotopeIncrement );
+		else maxNoOfC13 = Mutables.maxNoOfC13;
 		
-		if( Constants.PPMTolerance != 0 ) precursorAccuracy = Constants.PPMtoDalton( neutralMW, Constants.PPMTolerance );
-		else precursorAccuracy = Constants.precursorAccuracy;
+		if( Mutables.PPMTolerance != 0 ) precursorAccuracy = Constants.PPMtoDalton( neutralMW, Mutables.PPMTolerance );
+		else precursorAccuracy = Mutables.precursorAccuracy;
 		
 		precursorTolerance = precursorAccuracy + maxNoOfC13*Constants.IsotopeSpace;
 		
@@ -102,12 +103,12 @@ public class MSMScan {
 		}	
 		spectrum.setExtraInformation( basePeakIntensity, TIC );
 		
-		gapTolerance = Constants.fragmentTolerance*2;
-		nonModifiedDelta = (precursorTolerance < Constants.massToleranceForDenovo)? precursorTolerance : Constants.massToleranceForDenovo;
+		gapTolerance = Mutables.fragmentTolerance*2;
+		nonModifiedDelta = (precursorTolerance < Mutables.massToleranceForDenovo)? precursorTolerance : Mutables.massToleranceForDenovo;
 				
 		if( precursorTolerance > gapTolerance ) gapTolerance += precursorTolerance;
 		
-		if( spectrum.size() < minPeaksCount ) peaklist = null; 
+		if( spectrum.size() < MODaConst.minPeaksCount ) peaklist = null;
 		else peaklist = spectrum;
 		
 		return (peaklist!=null);
@@ -117,9 +118,9 @@ public class MSMScan {
 	
 		ArrayList<RawPeak> reporters = new ArrayList<>();
 		for(int i=1; i<removedMasses.length; i++)
-			reporters.add( new RawPeak(removedMasses[i], Constants.fragmentTolerance) );
+			reporters.add( new RawPeak(removedMasses[i], Mutables.fragmentTolerance) );
 		
-		reporters.add( new RawPeak(removedMasses[0] + Constants.Proton, Constants.fragmentTolerance) );
+		reporters.add( new RawPeak(removedMasses[0] + Constants.Proton, Mutables.fragmentTolerance) );
 
 		int fragCS = 1;
 		while( true ){
@@ -129,13 +130,13 @@ public class MSMScan {
 			double thirdIso  = secondIso + Constants.IsotopeSpace/fragCS;
 			double forthIso  = thirdIso + Constants.IsotopeSpace/fragCS;
 			
-			reporters.add( new RawPeak(compItraqTag, Constants.fragmentTolerance) );
-			reporters.add( new RawPeak(secondIso, Constants.fragmentTolerance) );
-			reporters.add( new RawPeak(thirdIso, Constants.fragmentTolerance) );
-			reporters.add( new RawPeak(forthIso, Constants.fragmentTolerance) );
+			reporters.add( new RawPeak(compItraqTag, Mutables.fragmentTolerance) );
+			reporters.add( new RawPeak(secondIso, Mutables.fragmentTolerance) );
+			reporters.add( new RawPeak(thirdIso, Mutables.fragmentTolerance) );
+			reporters.add( new RawPeak(forthIso, Mutables.fragmentTolerance) );
 
 			for(int i=1; i<=maxNoOfC13; i++){
-				reporters.add( new RawPeak(compItraqTag-i*Constants.IsotopeSpace/fragCS, Constants.fragmentTolerance) );
+				reporters.add( new RawPeak(compItraqTag-i*Constants.IsotopeSpace/fragCS, Mutables.fragmentTolerance) );
 			}
 			if( ++fragCS >= this.charge ) break;
 		}

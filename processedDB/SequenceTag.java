@@ -1,6 +1,6 @@
 package processedDB;
 
-import modi.Constants;
+import modi.Mutables;
 
 public class SequenceTag implements Comparable<SequenceTag> {
 	private double 	nGap;
@@ -27,7 +27,7 @@ public class SequenceTag implements Comparable<SequenceTag> {
 	
 	public boolean extendable(SequenceTag x){
 		if( this.mType == x.mType ) {
-            return Math.abs(this.nGap - x.nGap) <= Constants.massToleranceForDenovo;
+            return Math.abs(this.nGap - x.nGap) <= Mutables.massToleranceForDenovo;
 		}
 		return false;
 	}

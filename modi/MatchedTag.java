@@ -94,9 +94,9 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 
 	public boolean checkCompatibility()
 	{
-		if( start == 0 && !Constants.fEqual(getNTermOffset()-Constants.NTERM_FIX_MOD, 0) )
+		if( start == 0 && !Mutables.fEqual(getNTermOffset()-Mutables.NTERM_FIX_MOD, 0) )
 			return false;
-        return end != matchedPeptide.size() - 1 || Constants.fEqual(getCTermOffset() - Constants.CTERM_FIX_MOD, 0);
+        return end != matchedPeptide.size() - 1 || Mutables.fEqual(getCTermOffset() - Mutables.CTERM_FIX_MOD, 0);
     }
 	
 
@@ -106,7 +106,7 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 	{
 		assert(this.matchedPeptide==target.matchedPeptide
 				&& this.direction == target.direction
-				&& Constants.fEqual( this.getOffset(), target.getOffset()) );
+				&& Mutables.fEqual( this.getOffset(), target.getOffset()) );
 		
 		RelativePosition ir= this.getRelativePosition(target);
 		if( ir == RelativePosition.SEPERATED )
@@ -275,7 +275,7 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 			return false;
 		if( !this.tagSequence.toString().equals(tag.tagSequence.toString()) )
 			return false;
-        return Constants.fEqual(this.getOffset(), tag.getOffset());
+        return Mutables.fEqual(this.getOffset(), tag.getOffset());
     }
 	
 	public boolean isComplementarySame(MatchedTag tag){
@@ -283,16 +283,16 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 			return false;
 		if( !this.tagSequence.toString().equals(tag.tagSequence.toString()) )
 			return false;
-        return Constants.fEqual(this.getNTermOffset(), tag.getNTermOffset());
+        return Mutables.fEqual(this.getNTermOffset(), tag.getNTermOffset());
     }
 	
 	public boolean isLikelyChild(MatchedTag tag){
 		if( this.direction != tag.direction )
 			return false;
 
-		if( Constants.fEqual( this.getNTermOffset()-tag.getNTermOffset(), Constants.IsotopeSpace) )
+		if( Mutables.fEqual( this.getNTermOffset()-tag.getNTermOffset(), Constants.IsotopeSpace) )
 			return true;
-        return Constants.fEqual(this.getNTermOffset() - tag.getNTermOffset(), -Constants.IsotopeSpace);
+        return Mutables.fEqual(this.getNTermOffset() - tag.getNTermOffset(), -Constants.IsotopeSpace);
     }
 
 	public boolean useSamePeak(MatchedTag tag){

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import modi.Constants;
+import modi.Mutables;
 
 public class ChainTagPeptide extends MODPeptide {
 	
-	private static final double	a = ( Constants.maxModifiedMass < 0 )?  Constants.gapTolerance : Constants.maxModifiedMass+Constants.gapTolerance;
-	private static final double	b = ( Constants.minModifiedMass > 0 )? -Constants.gapTolerance : Constants.minModifiedMass-Constants.gapTolerance;
+	private static final double	a = ( Mutables.maxModifiedMass < 0 )?  Mutables.gapTolerance : Mutables.maxModifiedMass+Mutables.gapTolerance;
+	private static final double	b = ( Mutables.minModifiedMass > 0 )? -Mutables.gapTolerance : Mutables.minModifiedMass-Mutables.gapTolerance;
 	private static final double	shiftWindow = (a - b);
 	
 	final ArrayList<SequenceTag> mTags;

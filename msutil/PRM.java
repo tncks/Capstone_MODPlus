@@ -1,6 +1,7 @@
 package msutil;
 
 import modi.Constants;
+import modi.Mutables;
 
 
 @SuppressWarnings("unused")
@@ -9,7 +10,7 @@ public class PRM {
     final double prmMW;
 	
 	static final int accuracy = ( Constants.MSMSResolution==1 )? 100 : 10;
-	static final int tolerance = (Constants.fragmentTolerance < 1.0/accuracy)? 1 : (int)(Constants.fragmentTolerance*accuracy);
+	static final int tolerance = (Mutables.fragmentTolerance < 1.0/accuracy)? 1 : (int)(Mutables.fragmentTolerance*accuracy);
 
 	final double[] bTable;
     final double[] yTable;
@@ -60,12 +61,12 @@ public class PRM {
 		int size = bTable.length - slack;
 	
 		int startpoint;
-		int endpoint	= (int)(Constants.precursorTolerance*accuracy);
-		if( Constants.maxNoOfC13 == 0 ){
+		int endpoint	= (int)(Mutables.precursorTolerance*accuracy);
+		if( Mutables.maxNoOfC13 == 0 ){
 			startpoint	= 	-endpoint;			
 		}//*/
 		else{
-			startpoint	= (int)((Constants.minNoOfC13-Constants.precursorAccuracy)*accuracy);
+			startpoint	= (int)((Mutables.minNoOfC13-Mutables.precursorAccuracy)*accuracy);
 		}
 		
 		if( slack < Math.abs(startpoint) || slack < Math.abs(endpoint) ) return 0;

@@ -238,7 +238,7 @@ public class PTMDB extends ArrayList<PTM> {
 			else
 				assert(false);
 
-			double shift = ( residue != null && residue.getIndex() == 1 )? Constants.alkylatedToCys : 0;
+			double shift = ( residue != null && residue.getIndex() == 1 )? Mutables.alkylatedToCys : 0;
 			this.add(new PTM(
 						id++,
 						elemPTM.getChildText("name"), 
@@ -288,7 +288,7 @@ public class PTMDB extends ArrayList<PTM> {
 		
 		
 		for ( PTM ptm : this ) {
-			if( ptm.getMassDifference() < Constants.minModifiedMass || ptm.getMassDifference() > Constants.maxModifiedMass ) continue;
+			if( ptm.getMassDifference() < Mutables.minModifiedMass || ptm.getMassDifference() > Mutables.maxModifiedMass ) continue;
 			if ( ptm.getResidue() != null ) {
 				int aa = ptm.getResidue().getIndex();
 				PTMTable[ptm.getResidue().getIndex()][ptm.getPTMPosition().ordinal()].add(ptm);
@@ -364,10 +364,10 @@ public class PTMDB extends ArrayList<PTM> {
 			this.result = result; /////////////////////
 			this.occur = new PTM[seq.size()];
 			this.numNextFixSite = new int[seq.size()];
-			this.numMaxMods = Constants.getMaxPTMOccurrence(seq.size());
+			this.numMaxMods = Mutables.getMaxPTMOccurrence(seq.size());
 
 			// Calculate the number of fixed modification sites
-			int cum = (Constants.CTERM_FIX_MOD != 0 &&
+			int cum = (Mutables.CTERM_FIX_MOD != 0 &&
 					(this.position == PTMPosition.ANY_C_TERM ||
 							this.position == PTMPosition.PROTEIN_C_TERM)) ? 1 : 0;
 
@@ -391,7 +391,7 @@ public class PTMDB extends ArrayList<PTM> {
 				double error = Math.abs(mass - massDiff);
 
 				// Check if error is within tolerance
-				if (error <= Constants.gapTolerance && Constants.isWithinAccuracy(error)) {
+				if (error <= Mutables.gapTolerance && Mutables.isWithinAccuracy(error)) {
 					PTMRun run = new PTMRun();
 					// Add all PTM occurrences
 					for (int i = 0; i < seq.size(); i++) {
@@ -413,7 +413,7 @@ public class PTMDB extends ArrayList<PTM> {
 			findPTM_DFS(mass, pos + 1, cnt, extra);
 
 			// Check constraints before adding PTMs
-			if (cnt >= Constants.maxPTMPerGap) return;
+			if (cnt >= Mutables.maxPTMPerGap) return;
 			if (extra == 1 && numMaxMods == 1) {
 				if (numNextFixSite[pos] == 0) return;
 			}
@@ -491,14 +491,14 @@ public class PTMDB extends ArrayList<PTM> {
 		ArrayList<PTMRun> newGapInterpret = new ArrayList<>();
 	
 		double ierror = Math.abs( massDiff );
-		if( ierror < Constants.nonModifiedDelta ){
+		if( ierror < Mutables.nonModifiedDelta ){
 			PTMSearchResult noModResult = new PTMSearchResult(newGapInterpret, true);
 			resultCache.put(key, noModResult);
 			return noModResult;
 
 		}
 		
-		if( ierror < Constants.gapTolerance ){
+		if( ierror < Mutables.gapTolerance ){
 			PTMRun run = new PTMRun();
 			run.setError(ierror);
 			newGapInterpret.add( run );			
@@ -799,23 +799,23 @@ public class PTMDB extends ArrayList<PTM> {
 			else
 				assert(false);
 
-            if( Constants.NTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_N_TERM || position == PTMPosition.PROTEIN_N_TERM) ) {
+            if( Mutables.NTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_N_TERM || position == PTMPosition.PROTEIN_N_TERM) ) {
 				if( canBeModifiedOnFixedAA ) {
 					pname += "/Nterm";
-					massdelta += Constants.NTERM_FIX_MOD;
+					massdelta += Mutables.NTERM_FIX_MOD;
 				}
 				else continue;
 			}
-			if( Constants.CTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_C_TERM || position == PTMPosition.PROTEIN_C_TERM) ) {
+			if( Mutables.CTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_C_TERM || position == PTMPosition.PROTEIN_C_TERM) ) {
 				if( canBeModifiedOnFixedAA ) {
-					massdelta += Constants.CTERM_FIX_MOD;
+					massdelta += Mutables.CTERM_FIX_MOD;
 					pname += "/Cterm";
 				}
 				else continue;
 			}
 			
 			double ac_delta = Double.parseDouble(elemPTM.getChildText("massDifference"));
-			if( ac_delta < Constants.minModifiedMass || ac_delta > Constants.maxModifiedMass ) continue;
+			if( ac_delta < Mutables.minModifiedMass || ac_delta > Mutables.maxModifiedMass ) continue;
 			ac_delta -= massdelta;
 			
 			this.add(new PTM(
@@ -869,23 +869,23 @@ public class PTMDB extends ArrayList<PTM> {
 
 			String pname = elemPTM.getAttributeValue("name");
 			
-			if( Constants.NTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_N_TERM || position == PTMPosition.PROTEIN_N_TERM) ) {
+			if( Mutables.NTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_N_TERM || position == PTMPosition.PROTEIN_N_TERM) ) {
 				if( canBeModifiedOnFixedAA ) {
 					pname += "/Nterm";
-					massdelta += Constants.NTERM_FIX_MOD;
+					massdelta += Mutables.NTERM_FIX_MOD;
 				}
 				else continue;
 			}
-			if( Constants.CTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_C_TERM || position == PTMPosition.PROTEIN_C_TERM) ) {
+			if( Mutables.CTERM_FIX_MOD != 0 && (position == PTMPosition.ANY_C_TERM || position == PTMPosition.PROTEIN_C_TERM) ) {
 				if( canBeModifiedOnFixedAA ) {
 					pname += "/Cterm";
-					massdelta += Constants.CTERM_FIX_MOD;
+					massdelta += Mutables.CTERM_FIX_MOD;
 				}
 				else continue;
 			}
 			
 			double ac_delta = Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
-			if( ac_delta < Constants.minModifiedMass || ac_delta > Constants.maxModifiedMass ) continue;
+			if( ac_delta < Mutables.minModifiedMass || ac_delta > Mutables.maxModifiedMass ) continue;
 			ac_delta -= massdelta;
 			
 			this.add(new PTM(
@@ -922,10 +922,10 @@ public class PTMDB extends ArrayList<PTM> {
 			
 			if( residueStr == null ) continue;
 			else if( residueStr.compareToIgnoreCase("N-term") == 0 ){
-				Constants.NTERM_FIX_MOD += Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
+				Mutables.NTERM_FIX_MOD += Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
 			}
 			else if( residueStr.compareToIgnoreCase("C-term") == 0 ){
-				Constants.CTERM_FIX_MOD += Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
+				Mutables.CTERM_FIX_MOD += Double.parseDouble(elemPTM.getAttributeValue("massdiff"));
 			}
 			else residue = AminoAcid.getAminoAcid(residueStr.charAt(0));
 			
@@ -1045,15 +1045,15 @@ public class PTMDB extends ArrayList<PTM> {
 				if( ptm.getAbbAA() =='W' ) ptm.setPenalty(0.8);	
 			}
 			
-			if( ptm.getAbbAA() =='Q' && ptm.getPTMPosition() == PTMPosition.ANY_N_TERM && Constants.round(ptm.getMassDifference()+Constants.NTERM_FIX_MOD) == -17 ){
+			if( ptm.getAbbAA() =='Q' && ptm.getPTMPosition() == PTMPosition.ANY_N_TERM && Constants.round(ptm.getMassDifference()+Mutables.NTERM_FIX_MOD) == -17 ){
 				ptm.setPenalty(0.5);
 				ptm.setModCount(0);
 			}
 
 			//setting isobaric labeling 
-			if( Constants.reporterMassOfIsobaricTag != null && Math.abs(Constants.reporterMassOfIsobaricTag[0]-ptm.getMassDifference()) < 0.01 ){
+			if( Mutables.reporterMassOfIsobaricTag != null && Math.abs(Mutables.reporterMassOfIsobaricTag[0]-ptm.getMassDifference()) < 0.01 ){
 				if( ptm.getAbbAA() == 'S' || ptm.getAbbAA() == 'T' ) {
-					if( "itraq4plex".compareTo(Constants.isobaricTag) == 0 ) ptm.setDiagnosticIon(163.1199);
+					if( "itraq4plex".compareTo(Mutables.isobaricTag) == 0 ) ptm.setDiagnosticIon(163.1199);
 					ptm.setPenalty(0.5);
 					ptm.setModCount(0);
 					AminoAcid.canBeEasilyModified(ptm.getAbbAA());
@@ -1065,7 +1065,7 @@ public class PTMDB extends ArrayList<PTM> {
 				if( ptm.getAbbAA() =='K' ) ptm.setDiagnosticIon(126.0913);
 				if( ptm.getPTMPosition() == PTMPosition.PROTEIN_N_TERM ) ptm.setPenalty(0.5);				
 				
-				if( "Acetyl".compareToIgnoreCase(Constants.enrichedModification) == 0 ) {
+				if( "Acetyl".compareToIgnoreCase(Mutables.enrichedModification) == 0 ) {
 					ptm.setPenalty(0.5);					
 					if( ptm.getAbbAA() =='K' ) {
 						ptm.setModCount(0);
@@ -1080,7 +1080,7 @@ public class PTMDB extends ArrayList<PTM> {
 			if( "Phospho".compareTo(ptm.getName()) == 0 ){
 				if( ptm.getAbbAA() =='S' || ptm.getAbbAA() =='T' ) {
 					ptm.setNeutralLoss(ptm.getMassDifference()+Constants.H2O);
-					if( "Phospho".compareToIgnoreCase(Constants.enrichedModification) == 0 ) {
+					if( "Phospho".compareToIgnoreCase(Mutables.enrichedModification) == 0 ) {
 						ptm.setPenalty(0.5);
 						ptm.setModCount(0);
 						AminoAcid.canBeEasilyModified(ptm.getAbbAA());

@@ -131,7 +131,7 @@ public class MODPlus {
             String enzymeName = enzyme.getAttributeValue("name");
             String cut = enzyme.getAttributeValue("cut");
             String sence = enzyme.getAttributeValue("sence");
-            Constants.protease = new ProtCutter(enzymeName, cut, sence);
+            Mutables.protease = new ProtCutter(enzymeName, cut, sence);
         }//*/
 
         Element com_enzyme = search.getChild("combined_enzyme");
@@ -139,16 +139,16 @@ public class MODPlus {
             String enzymeName = com_enzyme.getAttributeValue("name");
             String nn = com_enzyme.getAttributeValue("nterm_cleave");
             String cc = com_enzyme.getAttributeValue("cterm_cleave");
-            Constants.protease = new ProtCutter(enzymeName, nn, cc, true);
+            Mutables.protease = new ProtCutter(enzymeName, nn, cc, true);
         }
 
-        Constants.alkylatedToCys = 0; //DEPRECATED
+        Mutables.alkylatedToCys = 0; //DEPRECATED
         Element cys_alkylated = search.getChild("cys_alkylated");
         if (cys_alkylated != null) {
-            Constants.alkylationMethod = cys_alkylated.getAttributeValue("name");
-            Constants.alkylatedToCys = Double.parseDouble(cys_alkylated.getAttributeValue("massdiff"));
-            AminoAcid.modifiedAminoAcidMass('C', Constants.alkylatedToCys);
-            MSMass.modifiedAminoAcidMass('C', Constants.alkylatedToCys);
+            Mutables.alkylationMethod = cys_alkylated.getAttributeValue("name");
+            Mutables.alkylatedToCys = Double.parseDouble(cys_alkylated.getAttributeValue("massdiff"));
+            AminoAcid.modifiedAminoAcidMass('C', Mutables.alkylatedToCys);
+            MSMass.modifiedAminoAcidMass('C', Mutables.alkylatedToCys);
         }
 
         Element instrument_resolution = search.getChild("instrument_resolution");
@@ -164,40 +164,40 @@ public class MODPlus {
             Element param;
             param = parameters.getChild("enzyme_constraint");
             if (param != null) {
-                Constants.missCleavages = Integer.parseInt(param.getAttributeValue("max_miss_cleavages"));
-                Constants.numberOfEnzymaticTermini = Integer.parseInt(param.getAttributeValue("min_number_termini"));
-                if (Constants.numberOfEnzymaticTermini > 2) Constants.numberOfEnzymaticTermini = 2;
+                Mutables.missCleavages = Integer.parseInt(param.getAttributeValue("max_miss_cleavages"));
+                Mutables.numberOfEnzymaticTermini = Integer.parseInt(param.getAttributeValue("min_number_termini"));
+                if (Mutables.numberOfEnzymaticTermini > 2) Mutables.numberOfEnzymaticTermini = 2;
             }
 
             param = parameters.getChild("isotope_error");
             if (param != null) {
                 if (param.getAttributeValue("min_C13_number") != null)
-                    Constants.minNoOfC13 = Integer.parseInt(param.getAttributeValue("min_C13_number"));
+                    Mutables.minNoOfC13 = Integer.parseInt(param.getAttributeValue("min_C13_number"));
 
                 if (param.getAttributeValue("max_C13_number") != null)
-                    Constants.maxNoOfC13 = Integer.parseInt(param.getAttributeValue("max_C13_number"));
+                    Mutables.maxNoOfC13 = Integer.parseInt(param.getAttributeValue("max_C13_number"));
 
-                if (Constants.maxNoOfC13 == 0 && param.getAttributeValue("increment_per_dalton") != null)
-                    Constants.rangeForIsotopeIncrement = Integer.parseInt(param.getAttributeValue("increment_per_dalton"));
+                if (Mutables.maxNoOfC13 == 0 && param.getAttributeValue("increment_per_dalton") != null)
+                    Mutables.rangeForIsotopeIncrement = Integer.parseInt(param.getAttributeValue("increment_per_dalton"));
             }
 
             param = parameters.getChild("peptide_mass_tol");
             if (param != null) {
                 if (param.getAttributeValue("unit").compareToIgnoreCase("ppm") == 0) {
-                    Constants.PPMTolerance = Double.parseDouble(param.getAttributeValue("value"));
+                    Mutables.PPMTolerance = Double.parseDouble(param.getAttributeValue("value"));
                 } else {
-                    Constants.precursorTolerance = Constants.precursorAccuracy = Double.parseDouble(param.getAttributeValue("value"));
+                    Mutables.precursorTolerance = Mutables.precursorAccuracy = Double.parseDouble(param.getAttributeValue("value"));
                 }
             }
 
             param = parameters.getChild("fragment_ion_tol");
             if (param != null) {
-                Constants.fragmentTolerance = Double.parseDouble(param.getAttributeValue("value"));
+                Mutables.fragmentTolerance = Double.parseDouble(param.getAttributeValue("value"));
             }
             param = parameters.getChild("modified_mass_range");
             if (param != null) {
-                Constants.minModifiedMass = Double.parseDouble(param.getAttributeValue("min_value"));
-                Constants.maxModifiedMass = Double.parseDouble(param.getAttributeValue("max_value"));
+                Mutables.minModifiedMass = Double.parseDouble(param.getAttributeValue("min_value"));
+                Mutables.maxModifiedMass = Double.parseDouble(param.getAttributeValue("max_value"));
             }
         }
 
@@ -207,76 +207,76 @@ public class MODPlus {
             Element isobaric = protocol.getChild("isobaric_labeling");
             if (isobaric != null) {
                 if (isobaric.getAttributeValue("reagent") != null) {
-                    Constants.isobaricTag = isobaric.getAttributeValue("reagent");
-                    Constants.reporterMassOfIsobaricTag = IsobaricTag.getReporterMasses(isobaric.getAttributeValue("reagent"));
-                    if ("".compareTo(Constants.isobaricTag) != 0)
-                        System.out.print(Constants.isobaricTag + " Labelled" + ((Constants.reporterMassOfIsobaricTag == null) ? " (NOT Supported)" : " (Supported)"));
+                    Mutables.isobaricTag = isobaric.getAttributeValue("reagent");
+                    Mutables.reporterMassOfIsobaricTag = IsobaricTag.getReporterMasses(isobaric.getAttributeValue("reagent"));
+                    if ("".compareTo(Mutables.isobaricTag) != 0)
+                        System.out.print(Mutables.isobaricTag + " Labelled" + ((Mutables.reporterMassOfIsobaricTag == null) ? " (NOT Supported)" : " (Supported)"));
                 }
             }
             Element modEnrich = protocol.getChild("modification_enrichment");
             if (modEnrich != null) {
                 if (modEnrich.getAttributeValue("mod") != null) {
-                    Constants.enrichedModification = modEnrich.getAttributeValue("mod");
-                    if ("".compareTo(Constants.enrichedModification) != 0)
-                        System.out.print(" & " + Constants.enrichedModification + " Enriched" +
-                                (("Acetyl".compareToIgnoreCase(Constants.enrichedModification) == 0 || "Phospho".compareToIgnoreCase(Constants.enrichedModification) == 0) ? " (Supported)" : " (NOT Supported)"));
+                    Mutables.enrichedModification = modEnrich.getAttributeValue("mod");
+                    if ("".compareTo(Mutables.enrichedModification) != 0)
+                        System.out.print(" & " + Mutables.enrichedModification + " Enriched" +
+                                (("Acetyl".compareToIgnoreCase(Mutables.enrichedModification) == 0 || "Phospho".compareToIgnoreCase(Mutables.enrichedModification) == 0) ? " (Supported)" : " (NOT Supported)"));
                 }
             }
             System.out.println();
         }
 
         Element modifications = search.getChild("modifications");
-        Constants.variableModifications = new PTMDB();
-        Constants.fixedModifications = new PTMDB();
+        Mutables.variableModifications = new PTMDB();
+        Mutables.fixedModifications = new PTMDB();
 
         if (modifications != null) {
             double[] fixedAA = new double[26];
 
             Element fixed = modifications.getChild("fixed");
             if (fixed != null) {
-                if (Constants.fixedModifications.setFixedModificatinos(fixed, fixedAA) == 0) {
+                if (Mutables.fixedModifications.setFixedModificatinos(fixed, fixedAA) == 0) {
                     System.out.println(message[2]);
                     return 2;
                 }
             }
-            if (!Constants.fixedModifications.isEmpty())
-                System.out.println("Fixed modifications : " + Constants.fixedModifications.size() + " selected");
+            if (!Mutables.fixedModifications.isEmpty())
+                System.out.println("Fixed modifications : " + Mutables.fixedModifications.size() + " selected");
 
             Element variable = modifications.getChild("variable");
             if (variable != null) {
-                Constants.PTM_FILE_NAME = variable.getAttributeValue("local_path");
+                Mutables.PTM_FILE_NAME = variable.getAttributeValue("local_path");
                 boolean canBeModifiedOnFixedAA = variable.getAttributeValue("canBeModifiedOnFixedAA").equals("1");
-                Constants.canBeModifiedOnFixedAA = canBeModifiedOnFixedAA;
-                if (Constants.PTM_FILE_NAME != null) {
-                    Constants.variableModifications.setVariableModificatinos(Constants.PTM_FILE_NAME, fixedAA, canBeModifiedOnFixedAA);
+                Mutables.canBeModifiedOnFixedAA = canBeModifiedOnFixedAA;
+                if (Mutables.PTM_FILE_NAME != null) {
+                    Mutables.variableModifications.setVariableModificatinos(Mutables.PTM_FILE_NAME, fixedAA, canBeModifiedOnFixedAA);
                 }
-                Constants.variableModifications.setVariableModificatinos(variable, fixedAA, canBeModifiedOnFixedAA);
+                Mutables.variableModifications.setVariableModificatinos(variable, fixedAA, canBeModifiedOnFixedAA);
 
                 if (canBeModifiedOnFixedAA) {
-                    for (PTM p : Constants.fixedModifications) {
-                        Constants.variableModifications.add(
-                                new PTM(Constants.variableModifications.size(), "De-" + p.getName(), "",
+                    for (PTM p : Mutables.fixedModifications) {
+                        Mutables.variableModifications.add(
+                                new PTM(Mutables.variableModifications.size(), "De-" + p.getName(), "",
                                         -p.getMassDifference(), 0, p.getResidue(), p.getPTMPosition(), (p.getAbbAA() == 'C') ? 1 : 0));
                     }
                 }
                 if (variable.getAttributeValue("multi_mods") != null && variable.getAttributeValue("multi_mods").equals("0")) {
-                    Constants.maxPTMPerGap = Constants.maxPTMPerPeptide = 1;
+                    Mutables.maxPTMPerGap = Mutables.maxPTMPerPeptide = 1;
                 }
             }
-            if (!Constants.variableModifications.isEmpty()) {
-                System.out.print("Variable modifications : " + Constants.variableModifications.size() + " selected (");
-                Constants.variableModifications.setPTMDiagnosticIon();
-                if (Constants.maxPTMPerPeptide == 1) System.out.println("one modification per peptide)");
+            if (!Mutables.variableModifications.isEmpty()) {
+                System.out.print("Variable modifications : " + Mutables.variableModifications.size() + " selected (");
+                Mutables.variableModifications.setPTMDiagnosticIon();
+                if (Mutables.maxPTMPerPeptide == 1) System.out.println("one modification per peptide)");
                 else System.out.println("multiple modifications per peptide)");
             }
         }
-        Constants.variableModifications.constructPTMLookupTable();
+        Mutables.variableModifications.constructPTMLookupTable();
 
         Element decoy_search = search.getChild("decoy_search");
         if (decoy_search != null) {
             if (decoy_search.getAttributeValue("checked") != null) {
                 if ("1".compareTo(decoy_search.getAttributeValue("checked")) == 0) {
-                    Constants.targetDecoy = 1;
+                    Mutables.targetDecoy = 1;
                     System.out.println("Decoy search checked");
                 }
             }
@@ -286,8 +286,8 @@ public class MODPlus {
         if (multistages_search != null) {
             if (multistages_search.getAttributeValue("checked") != null) {
                 if ("1".compareTo(multistages_search.getAttributeValue("checked")) == 0) {
-                    Constants.firstSearchProgram = multistages_search.getAttributeValue("program");
-                    System.out.println("MultiStages Search checked " + Constants.firstSearchProgram);
+                    Mutables.firstSearchProgram = multistages_search.getAttributeValue("program");
+                    System.out.println("MultiStages Search checked " + Mutables.firstSearchProgram);
                 }
             }
         }
@@ -349,7 +349,7 @@ public class MODPlus {
 
         ScanIterator scaniter = ScanIterator.get( Constants.SPECTRUM_LOCAL_PATH, Constants.SPECTRA_FILE_TYPE );
         StemTagTrie  ixPDB = new StemTagTrie( Constants.PROTEIN_DB_LOCAL_PATH );
-        final boolean considerIsotopeErr = ( Constants.maxNoOfC13 !=0 || Constants.precursorTolerance > 0.50001 )? true : false;
+        final boolean considerIsotopeErr = ( Mutables.maxNoOfC13 !=0 || Mutables.precursorTolerance > 0.50001 )? true : false;
         if( scaniter == null || scaniter.size() == 0 || ixPDB.getSizeOfEntries() == 0 ){
             return 1;
         }
@@ -370,8 +370,6 @@ public class MODPlus {
 
             for(int i=0; i<chargedSpectra.size(); i++){
                 Spectrum spectrum = chargedSpectra.get(i).getSpectrum();
-                if( spectrum.getObservedMW() > Constants.maxPeptideMass ) continue; //Temporal
-
                 PGraph graph = spectrum.getPeakGraph();
                 spectrum.setCorrectedParentMW( graph.correctMW( dynamicPMCorrection ) );
                 TagPool tPool = null;
@@ -390,16 +388,16 @@ public class MODPlus {
                     spectrum.normalizeIntensityLocally();
 
                     int extra = ( spectrum.getCharge() > 2 && Constants.INSTRUMENT_TYPE != Constants.msms_type.QTOF )? 2 : 0;
-                    spectrum.peakSelection(Constants.selectionWindowSize, Constants.minNumOfPeaksInWindow+extra );
+                    spectrum.peakSelection(Constants.selectionWindowSize, Mutables.minNumOfPeaksInWindow+extra );
 
-                    tPool = spectrum.generateTags(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain, Constants.massToleranceForDenovo);
+                    tPool = spectrum.generateTags(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain, Mutables.massToleranceForDenovo);
 
                 }
 
 
                 DPHeap heatedPepts = OneMOD.getHeatedPeptides( ixPDB, graph, tPool, considerIsotopeErr );
                 DPHeap tepidPepts  = null;
-                if( Constants.maxPTMPerPeptide > 1 )
+                if( Mutables.maxPTMPerPeptide > 1 )
                     if( heatedPepts == null || !heatedPepts.isConfident() ) {
                         tepidPepts = heatedPepts;
                         heatedPepts = MultiMOD.getHeatedPeptides( ixPDB, graph, tPool, dynamicPMCorrection );
@@ -513,8 +511,8 @@ public class MODPlus {
             if (primitiveTags == null || ixPDB == null)
                 return null;
 
-            double minDelta = (Constants.minModifiedMass < 0) ? Constants.minModifiedMass - Constants.gapTolerance : -Constants.gapTolerance;
-            double maxDelta = (Constants.maxModifiedMass > 0) ? Constants.maxModifiedMass + Constants.gapTolerance : +Constants.gapTolerance;
+            double minDelta = (Mutables.minModifiedMass < 0) ? Mutables.minModifiedMass - Mutables.gapTolerance : -Mutables.gapTolerance;
+            double maxDelta = (Mutables.maxModifiedMass > 0) ? Mutables.maxModifiedMass + Mutables.gapTolerance : +Mutables.gapTolerance;
             TagPool longTags = primitiveTags.extractAbove(Constants.minTagLengthPeptideShouldContain);
 
             int realTag = 0;
@@ -522,13 +520,13 @@ public class MODPlus {
             RetrivedPeptideMap searchResults = new RetrivedPeptideMap();
             for (Tag tag : longTags) {
 
-                RetrivedPeptideMap bRes = ixPDB.getRetrivedPeptides(orbMass, enzyme, NTT, tag.getBIonNtermOffset() - Constants.NTERM_FIX_MOD, tag,
-                        tag.getBIonCtermOffset() - Constants.CTERM_FIX_MOD, IonDirection.B_DIRECTION, minDelta, maxDelta, Constants.gapTolerance);
+                RetrivedPeptideMap bRes = ixPDB.getRetrivedPeptides(orbMass, enzyme, NTT, tag.getBIonNtermOffset() - Mutables.NTERM_FIX_MOD, tag,
+                        tag.getBIonCtermOffset() - Mutables.CTERM_FIX_MOD, IonDirection.B_DIRECTION, minDelta, maxDelta, Mutables.gapTolerance);
                 searchResults.combine(bRes);
 
                 Tag reverseTag = tag.reverseTag();
-                RetrivedPeptideMap yRes = ixPDB.getRetrivedPeptides(orbMass, enzyme, NTT, reverseTag.getYIonNtermOffset() - Constants.NTERM_FIX_MOD, reverseTag,
-                        reverseTag.getYIonCtermOffset() - Constants.CTERM_FIX_MOD, IonDirection.Y_DIRECTION, minDelta, maxDelta, Constants.gapTolerance);
+                RetrivedPeptideMap yRes = ixPDB.getRetrivedPeptides(orbMass, enzyme, NTT, reverseTag.getYIonNtermOffset() - Mutables.NTERM_FIX_MOD, reverseTag,
+                        reverseTag.getYIonCtermOffset() - Mutables.CTERM_FIX_MOD, IonDirection.Y_DIRECTION, minDelta, maxDelta, Mutables.gapTolerance);
                 searchResults.combine(yRes);
                 realTag++;
 
@@ -570,7 +568,7 @@ public class MODPlus {
     private static ArrayList<AnsPeptide> dynamicMODeye(TagTrie dynamicDB, PGraph graph, TagPool tPool) throws Exception {
         SpectrumAnalyzer szer = new SpectrumAnalyzer();
         MatchedTagPool matchedList = szer.extendedBuildMatchedTagPool(tPool, graph.getCorrectedMW(),
-                dynamicDB, Constants.protease, Constants.numberOfEnzymaticTermini);
+                dynamicDB, Mutables.protease, Mutables.numberOfEnzymaticTermini);
 
         TagChainPool tcPool = new TagChainPool();
         tcPool.putAll(szer.buildTagChain(matchedList));
@@ -578,7 +576,7 @@ public class MODPlus {
 
         boolean specAnnotated = false;
         if (tcPool.size() != 0) {
-            specAnnotated = szer.interpretTagChain(Constants.variableModifications, tcPool, graph);
+            specAnnotated = szer.interpretTagChain(Mutables.variableModifications, tcPool, graph);
         }
 
         ArrayList<AnsPeptide> cands = new ArrayList<>();

@@ -3,6 +3,7 @@ package msutil;
 import java.util.ArrayList;
 
 import modi.Constants;
+import modi.Mutables;
 import modi.PTM;
 
 @SuppressWarnings("unused")
@@ -116,7 +117,7 @@ public abstract class IonGraph extends ArrayList<IonNode> {
 			}
 		}
 		
-		int modAcid = ( modifiedMass < Constants.precursorTolerance )?  0 : (int)Math.ceil( modifiedMass / 110 );	
+		int modAcid = ( modifiedMass < Mutables.precursorTolerance )?  0 : (int)Math.ceil( modifiedMass / 110 );
 		double penalty = modAcid + modifiedResd/2;
 		seqCoverage = (double)seqHit/(len+penalty);		
 		ionCoverage = (double)bbHit /(len+penalty);

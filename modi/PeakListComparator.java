@@ -35,13 +35,13 @@ public class PeakListComparator {
 				p2Inserted = false;
 			}
 
-			if(Constants.fEqual(p1.getMass(), p2.getMass()))
+			if(Mutables.fEqual(p1.getMass(), p2.getMass()))
 			{
 				pairedPeaks.add(new PeakPair(p1, p2));
 				shared.add(new PeakPair(p1, p2));
 				p1Inserted = p2Inserted = true;
 			}
-			else if(p1.getMass() < p2.getMass() - Constants.fragmentTolerance)
+			else if(p1.getMass() < p2.getMass() - Mutables.fragmentTolerance)
 			{
 				pairedPeaks.add(new PeakPair(p1, null));
 				firstOnly.add(p1);

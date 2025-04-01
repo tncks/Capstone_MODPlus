@@ -2,13 +2,8 @@ package processedDB;
 
 import java.util.ArrayList;
 
+import modi.*;
 import msutil.MSMass;
-
-import modi.Constants;
-import modi.IonDirection;
-import modi.SrcProteinInfo;
-import modi.Tag;
-import modi.TagPool;
 
 public class RetrivedPeptide implements Comparable<RetrivedPeptide> {
 	
@@ -55,13 +50,13 @@ public class RetrivedPeptide implements Comparable<RetrivedPeptide> {
 			int index = 0, site;
 			String tSeq = tag.sequence().toString();
 			double ntFlank=tag.getBIonNtermOffset(), ctFlank=tag.getBIonCtermOffset();
-			double preMass = Constants.NTERM_FIX_MOD;
+			double preMass = Mutables.NTERM_FIX_MOD;
 			
 			while( ( site= peptide.indexOf(tSeq, index) ) != -1 ){
 				preMass += MSMass.getPepMass(peptide.substring(index, site));
 				double nGap= ntFlank - preMass;
 				if( ( nGap < maxModified ) && ( nGap > minModified ) ){
-					double cGap= ctFlank - Constants.CTERM_FIX_MOD - MSMass.getPepMass(peptide.substring(site+2));
+					double cGap= ctFlank - Mutables.CTERM_FIX_MOD - MSMass.getPepMass(peptide.substring(site+2));
 					if( ( cGap < maxModified ) && ( cGap > minModified ) ){
 						addedTags.add(new TagMatchToPept(tag, nGap, cGap, site, site+1, IonDirection.B_DIRECTION));
 						if( addedTags.size() > 2 ) break;
@@ -77,13 +72,13 @@ public class RetrivedPeptide implements Comparable<RetrivedPeptide> {
             tSeq = reverseTag.sequence().toString();
 			ntFlank= reverseTag.getYIonNtermOffset();
 			ctFlank= reverseTag.getYIonCtermOffset();
-			preMass = Constants.NTERM_FIX_MOD;
+			preMass = Mutables.NTERM_FIX_MOD;
 			
 			while( ( site= peptide.indexOf(tSeq, index) ) != -1 ){
 				preMass += MSMass.getPepMass(peptide.substring(index, site));
 				double cGap= ntFlank - preMass;
 				if( ( cGap < maxModified ) && ( cGap > minModified ) ){
-					double nGap= ctFlank - Constants.CTERM_FIX_MOD - MSMass.getPepMass(peptide.substring(site+2));
+					double nGap= ctFlank - Mutables.CTERM_FIX_MOD - MSMass.getPepMass(peptide.substring(site+2));
 					if( ( nGap < maxModified ) && ( nGap > minModified ) ){
 						addedTags.add(new TagMatchToPept(reverseTag, cGap, nGap, site, site+1, IonDirection.Y_DIRECTION));
 						if( addedTags.size() > 2 ) break;

@@ -6,6 +6,7 @@ import java.util.LinkedList;
 
 import modi.Constants;
 import modi.IonDirection;
+import modi.Mutables;
 import modi.Tag;
 
 import msutil.MSMass;
@@ -269,10 +270,10 @@ public class TagTrie extends ProtDatabase {
 						for(int k=n_leftAAPos; k<c_rightAAPos; k++){
 							if( cutter.isCleavage(sequence[k], sequence[k+1]) ) missCleavage++;
 						}
-						if( missCleavage > Constants.missCleavages ) continue;
+						if( missCleavage > Mutables.missCleavages ) continue;
 					}
 					
-					double deltaM= orbMass - (preMass+sharedMass+sufMass+Constants.NTERM_FIX_MOD+Constants.CTERM_FIX_MOD);	
+					double deltaM= orbMass - (preMass+sharedMass+sufMass+Mutables.NTERM_FIX_MOD+Mutables.CTERM_FIX_MOD);
 					if( ( deltaM < maxModified && deltaM > minModified ) || Math.abs(deltaM) <= tolerance  ){						
 						int peptPos = 1;					
 						if( sequence[n_leftAAPos-1] == delimeter || isPotentialProteinNterm(n_leftAAPos) ) peptPos = 0;//protein nterm
@@ -332,9 +333,9 @@ public class TagTrie extends ProtDatabase {
 				char nextAA = (char)sequence[endPos+1];
 
 				int ntt = 0;
-				if( Constants.protease.isCleavage(sequence[endPos], nextAA) ) ntt++; // checking Cterm			
-				if( Constants.protease.isCleavage(prevAA, peptide.charAt(0)) || isPotentialProteinNterm(start) ) ntt++;  // checking Nterm
-				if( ntt < Constants.numberOfEnzymaticTermini ) continue;
+				if( Mutables.protease.isCleavage(sequence[endPos], nextAA) ) ntt++; // checking Cterm
+				if( Mutables.protease.isCleavage(prevAA, peptide.charAt(0)) || isPotentialProteinNterm(start) ) ntt++;  // checking Nterm
+				if( ntt < Mutables.numberOfEnzymaticTermini ) continue;
 				
 				int protein = searchProtein(start);
 				String pname =  proteins[protein]; 

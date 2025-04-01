@@ -77,7 +77,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		int start = 0, end;
 		ArrayList<Gap> gapList = new ArrayList<>();
 		PTMPosition position;
-		double prevOffset = Constants.NTERM_FIX_MOD;
+		double prevOffset = Mutables.NTERM_FIX_MOD;
         double bStart = Constants.B_ION_OFFSET;
 		double yStart;
 		boolean hasQTag = false;
@@ -130,7 +130,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				position = PTMPosition.ANY_C_TERM;
 			
 			Gap tpGap = new Gap(matchedPeptide, start, end, bStart, Constants.Y_ION_OFFSET, 
-					((MatchedTag)this.last()).getCTermOffset()-Constants.CTERM_FIX_MOD, position, sourceSpectrum, this.mostAbundantBYPeakIntensity);
+					((MatchedTag)this.last()).getCTermOffset()-Mutables.CTERM_FIX_MOD, position, sourceSpectrum, this.mostAbundantBYPeakIntensity);
 			gapList.add( tpGap );
 		}
 		
@@ -149,7 +149,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
         this.score= 0;
 		for( SpecInterpretation t : this ){
 			if(t instanceof Gap gap) {
-                if( Math.abs( gap.getOffset() ) > Constants.gapTolerance ) {
+                if( Math.abs( gap.getOffset() ) > Mutables.gapTolerance ) {
 					modtype.add( Constants.round(gap.getOffset()) );
 				}
 			}
@@ -214,8 +214,8 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				if( seed.getRelativePosition(tag) == RelativePosition.SEPERATED )
 					break;
 				
-				if( seed.getDirection() == tag.getDirection() && 
-						Constants.fEqual( seed.getOffset(), tag.getOffset() ) ){
+				if( seed.getDirection() == tag.getDirection() &&
+						Mutables.fEqual( seed.getOffset(), tag.getOffset() ) ){
 					MatchedTag temp= new MatchedTag(seed);
 					temp.extend(tag);
 					if( temp.size() != temp.sequence().size()+1 )
@@ -259,7 +259,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 			int rev= 0;
 			MatchedTag newTag= new MatchedTag(sLongTag);
 			if( sLongTag.getDirection() == IonDirection.B_DIRECTION ){				
-			//	if( !Constants.fEqual(sLongTag.getNTermOffset(), 0) )
+			//	if( !Mutables.fEqual(sLongTag.getNTermOffset(), 0) )
 				{
 					rev++;
 					int s;
@@ -269,7 +269,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 					}
 					newTag.trim(newTag.getStart(), s);
 				}
-			//	if( !Constants.fEqual(sLongTag.getCTermOffset(), 0) )
+			//	if( !Mutables.fEqual(sLongTag.getCTermOffset(), 0) )
 			
 				{
 					rev++;
@@ -282,7 +282,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				}
 			}
 			else{
-			//	if( !Constants.fEqual(sLongTag.getCTermOffset(), 0) )
+			//	if( !Mutables.fEqual(sLongTag.getCTermOffset(), 0) )
 				{
 					rev++;
 					int s;
@@ -292,7 +292,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 					}
 					newTag.trim(newTag.getEnd(), s);
 				}
-			//	if( !Constants.fEqual(sLongTag.getNTermOffset(), 0) )
+			//	if( !Mutables.fEqual(sLongTag.getNTermOffset(), 0) )
 				{
 					rev++;
 					int s;
@@ -445,7 +445,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 			if(	seed.sequence().size() < Constants.minTagLengthPeptideShouldContain &&
 					tag.sequence().size() < Constants.minTagLengthPeptideShouldContain )
 				return;
-			if( Constants.fEqual( seed.getOffset(), tag.getOffset()) ) return;
+			if( Mutables.fEqual( seed.getOffset(), tag.getOffset()) ) return;
 			if( !seed.isLikelyChild(tag) ) return;
 			
 			int rev= 0;
@@ -493,7 +493,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 	private static boolean LinkableTags(MatchedTag one, MatchedTag two){
 		//ADJACENT tags citation
 		if( one.getDirection() == two.getDirection() ) return false;
-        return Constants.fEqual(one.getNTermOffset(), two.getNTermOffset());
+        return Mutables.fEqual(one.getNTermOffset(), two.getNTermOffset());
     }
 
 	private boolean useSamePeak(MatchedTag t) {
@@ -564,7 +564,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				prun.setPTMs(ptmComb.ptmList, gap.getStart());
 				ix++;
 			}
-			if( modCount <= Constants.maxPTMPerPeptide ) {
+			if( modCount <= Mutables.maxPTMPerPeptide ) {
 				ptmComb.ptmComb = tempComb.toString();
 				answers.add(ptmComb);
 			}

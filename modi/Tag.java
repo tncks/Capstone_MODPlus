@@ -170,8 +170,8 @@ public class Tag extends ArrayList<Peak> {
 	{
 		if (o instanceof Tag x){
             if( this.sequence().toString().equals(x.sequence().toString()) )
-				if ( Constants.fEqual(this.getBIonNtermOffset(), x.getBIonNtermOffset()) )
-                    return Constants.fEqual(this.getBIonCtermOffset(), x.getBIonCtermOffset());
+				if ( Mutables.fEqual(this.getBIonNtermOffset(), x.getBIonNtermOffset()) )
+                    return Mutables.fEqual(this.getBIonCtermOffset(), x.getBIonCtermOffset());
 		}
 		return false;
 	}

@@ -1,6 +1,7 @@
 package msutil;
 
 import modi.Constants;
+import modi.Mutables;
 import modi.PTM;
 
 public class Scoring {
@@ -30,7 +31,7 @@ public class Scoring {
 		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, graph);
 		else iGraph= new TRAPGraph(peptide, ptms, graph);
 		
-		if( !Constants.isWithinTolerance(iGraph.getCalculatedMW(), graph.getObservedMW(), Constants.precursorTolerance) ) 
+		if( !Mutables.isWithinTolerance(iGraph.getCalculatedMW(), graph.getObservedMW(), Mutables.precursorTolerance) )
 			return -1;
 		
 		iGraph.setScore(graph);

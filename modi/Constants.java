@@ -3,7 +3,7 @@ package modi;
 import java.text.DecimalFormat;
 
 import msutil.MSMass;
-import msutil.ProtCutter;
+
 
 public class Constants {
 	
@@ -71,64 +71,13 @@ public class Constants {
 	public static msms_type	 		INSTRUMENT_TYPE = msms_type.TRAP;
 	public static spectra_format 	SPECTRA_FILE_TYPE = spectra_format.MGF;
 
-	public static int			targetDecoy=0;
-
-	public static String 		firstSearchProgram = "";
-
-	public static double		NTERM_FIX_MOD = 0;
-	public static double		CTERM_FIX_MOD = 0;
-	
-	public static ProtCutter 	protease = ProtCutter.getCutter("Trypsin");
-	public static int			numberOfEnzymaticTermini = 2;
-	public static int			missCleavages = 2;
-	
-	public static int			minNoOfC13 = 0;
-	public static int			maxNoOfC13 = 0;
-	public static int			rangeForIsotopeIncrement = 0;
-	
-	public static double		alkylatedToCys = 0;
-	public static String		alkylationMethod;
-	
-	public static double		precursorAccuracy = 0.5;
-	public static double		precursorTolerance = 0.5;
-	public static double		PPMTolerance = 0;
-	public static double		fragmentTolerance = 0.6;
-	public static double		gapTolerance = 0.6;	
-	public static double		gapAccuracy = 1.6;	
-
-	
-	public static PTMDB 		variableModifications;
-	public static PTMDB 		fixedModifications;
-	public static double		minModifiedMass = -precursorTolerance;
-	public static double		maxModifiedMass = precursorTolerance;
-	public static boolean		canBeModifiedOnFixedAA = false;
-
 	public static int			MSResolution 	= 0;
 	public static int			MSMSResolution 	= 0;
 
-	//for De novo sequencing
-	public static double		massToleranceForDenovo = 0.3;
-	public static int 			MAX_TAG_SIZE = 50;
-
-	public static int			minNumOfPeaksInWindow = 4;
-	public static int			minTagLength = 3;
-	public static int			minTagLengthPeptideShouldContain = 3;
-	public static boolean		Leu_indistinguishable_Ile = true;
-	public static boolean		Lys_indistinguishable_Qln = true;
-
 	public static double		tagChainPruningRate = 0.5;
-
-	public static int			maxPTMPerGap		= 2;
-	public static int 			maxPTMPerPeptide	= 4;
-
-	public static String		PTM_FILE_NAME = "PTMDB.xml";
-
-	public static double		nonModifiedDelta = massToleranceForDenovo;
-
-	public static String		isobaricTag = "";
-	public static double[]		reporterMassOfIsobaricTag = null;
-
-	public static String		enrichedModification = "";
+	public static int			minTagLength = 3;
+	public static int 			MAX_TAG_SIZE = 50;
+	public static int			minTagLengthPeptideShouldContain = 3;
 
 
 
@@ -136,49 +85,39 @@ public class Constants {
 
 
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean		isInModifiedRange(double v ){
-		if( minModifiedMass-gapTolerance < v && v < maxModifiedMass+gapTolerance ) return true;
-		else return Math.abs(v) <= gapTolerance;
-	}
 
-	public static int getMaxPTMOccurrence( int seqLength ){		
-		if( seqLength > 10 ) return 1;
-		return maxPTMPerGap;
-	}
+
 	
 
 	
 	public static void	adjustParameters(){
 		if( INSTRUMENT_TYPE == msms_type.QTOF ) { // TOF
-			massToleranceForDenovo = 0.2;
-			minNumOfPeaksInWindow = 4;
+			Mutables.massToleranceForDenovo = 0.2;
+			Mutables.minNumOfPeaksInWindow = 4;
 			rNorm[0]= 6;
 		}
 		else {
-			massToleranceForDenovo = ( MSMSResolution == 0 )? 0.3 : 0.03;	
-			minNumOfPeaksInWindow = 4;
+			Mutables.massToleranceForDenovo = ( MSMSResolution == 0 )? 0.3 : 0.03;
+			Mutables.minNumOfPeaksInWindow = 4;
 			rNorm[0]= 6;
 		}
-		if( massToleranceForDenovo > fragmentTolerance/2 ) massToleranceForDenovo = fragmentTolerance/2;
-		if( fragmentTolerance < 0.1 ) MSMSResolution = 1;
-		Constants.Lys_indistinguishable_Qln = MSMass.isIndistinguishableAA('K', 'Q');
-		Constants.Leu_indistinguishable_Ile = MSMass.isIndistinguishableAA('L', 'I');
+		if( Mutables.massToleranceForDenovo > Mutables.fragmentTolerance/2 ) Mutables.massToleranceForDenovo = Mutables.fragmentTolerance/2;
+		if( Mutables.fragmentTolerance < 0.1 ) MSMSResolution = 1;
+		Mutables.Lys_indistinguishable_Qln = MSMass.isIndistinguishableAA('K', 'Q');
+		Mutables.Leu_indistinguishable_Ile = MSMass.isIndistinguishableAA('L', 'I');
 		
-		if( canBeModifiedOnFixedAA ){			
+		if( Mutables.canBeModifiedOnFixedAA ){
 			double fixedOff = -20;
-			if(!fixedModifications.isEmpty()){
-				for( PTM p : fixedModifications ){
+			if(!Mutables.fixedModifications.isEmpty()){
+				for( PTM p : Mutables.fixedModifications ){
 					fixedOff -= p.getMassDifference();
 				}
-				if( fixedOff < minModifiedMass ) minModifiedMass = fixedOff;
+				if( fixedOff < Mutables.minModifiedMass ) Mutables.minModifiedMass = fixedOff;
 			}
 		}
 	}
 	
-	public static boolean	fEqual(double v1, double v2){
-        return Math.abs(v1 - v2) <= fragmentTolerance;
-	}
+
 
 
 	
@@ -191,24 +130,8 @@ public class Constants {
 
 
 	
-	public static boolean isWithinTolerance(double calc, double obsv, double tol){
 
-		if( minNoOfC13 ==0 && maxNoOfC13 == 0 ) {
-            return !(Math.abs(calc - obsv) > tol);
-		}
-		else {
-			double tempError = obsv - calc;		
-			int isoerr = round( tempError / IsotopeSpace );		
-			if( isoerr < minNoOfC13 || maxNoOfC13 < isoerr ) return false;
-            return !(Math.abs(tempError - isoerr * IsotopeSpace) > precursorAccuracy);
-		}
-    }
-	public static boolean isWithinAccuracy(double err){		
-		if( gapAccuracy > 0.5 ) return true;
-		int isoerr = round( err / IsotopeSpace );
-        return !(Math.abs(err - isoerr * IsotopeSpace) > gapAccuracy);
-    }
-	
+
 	public static double PPMtoDalton(double mass, double ppm){	
 		return mass/1000000*ppm;
 	}
