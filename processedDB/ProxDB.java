@@ -81,7 +81,7 @@ public class ProxDB extends ArrayList<Prox> {
 		sizeOfResidues = residues;	
 		System.out.println( sizeOfEntries+" proteins / "  + sizeOfResidues+" residues" );
 		
-		if( Mutables.targetDecoy == 1 ){
+		if( Constants.targetDecoy == 1 ){
 			System.out.print("Decoy search checked.....  ");
 
 			for(int i=0; i<sizeOfEntries; i++){

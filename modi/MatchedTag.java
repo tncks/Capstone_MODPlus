@@ -94,9 +94,9 @@ public class MatchedTag extends Tag implements SpecInterpretation {
 
 	public boolean checkCompatibility()
 	{
-		if( start == 0 && !Mutables.fEqual(getNTermOffset()-Mutables.NTERM_FIX_MOD, 0) )
+		if( start == 0 && !Mutables.fEqual(getNTermOffset()-Constants.NTERM_FIX_MOD, 0) )
 			return false;
-        return end != matchedPeptide.size() - 1 || Mutables.fEqual(getCTermOffset() - Mutables.CTERM_FIX_MOD, 0);
+        return end != matchedPeptide.size() - 1 || Mutables.fEqual(getCTermOffset() - Constants.CTERM_FIX_MOD, 0);
     }
 	
 

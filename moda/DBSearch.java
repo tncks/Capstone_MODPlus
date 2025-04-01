@@ -19,8 +19,8 @@ public class DBSearch {
 		if( primitiveTags == null || ixPDB == null )
 			return null;
 
-		double minDelta = (Mutables.minModifiedMass < 0)? Mutables.minModifiedMass - Mutables.gapTolerance : - Mutables.gapTolerance;
-		double maxDelta = (Mutables.maxModifiedMass > 0)? Mutables.maxModifiedMass + Mutables.gapTolerance : + Mutables.gapTolerance;
+		double minDelta = (Constants.minModifiedMass < 0)? Constants.minModifiedMass - Mutables.gapTolerance : - Mutables.gapTolerance;
+		double maxDelta = (Constants.maxModifiedMass > 0)? Constants.maxModifiedMass + Mutables.gapTolerance : + Mutables.gapTolerance;
 
 		TagPool longTags = primitiveTags.extractAbove(Constants.minTagLengthPeptideShouldContain);
 
@@ -31,16 +31,16 @@ public class DBSearch {
 			if( tag.get(0).getPeakProperty() != PeakProperty.C_TERM_Y_ION_ONLY &&
 					tag.get(3).getPeakProperty() != PeakProperty.N_TERM_Y_ION_ONLY )
 			{
-				LinkedList<MODPeptide> bRes= ixPDB.getOneModPeptides(tag.getBIonNtermOffset()-Mutables.NTERM_FIX_MOD, tag.sequence().toString(),
-						tag.getBIonCtermOffset()-Mutables.CTERM_FIX_MOD, 0, minDelta, maxDelta, Mutables.gapTolerance);
+				LinkedList<MODPeptide> bRes= ixPDB.getOneModPeptides(tag.getBIonNtermOffset()-Constants.NTERM_FIX_MOD, tag.sequence().toString(),
+						tag.getBIonCtermOffset()-Constants.CTERM_FIX_MOD, 0, minDelta, maxDelta, Mutables.gapTolerance);
 				cpool.addAll(bRes);
 			}
 			if( tag.get(0).getPeakProperty() != PeakProperty.N_TERM_B_ION_ONLY &&
 					tag.get(3).getPeakProperty() != PeakProperty.C_TERM_B_ION_ONLY )
 			{
 				Tag reverseTag= tag.reverseTag();
-				LinkedList<MODPeptide> yRes= ixPDB.getOneModPeptides(reverseTag.getYIonNtermOffset()-Mutables.NTERM_FIX_MOD, reverseTag.sequence().toString(),
-						reverseTag.getYIonCtermOffset()-Mutables.CTERM_FIX_MOD, 1, minDelta, maxDelta, Mutables.gapTolerance);
+				LinkedList<MODPeptide> yRes= ixPDB.getOneModPeptides(reverseTag.getYIonNtermOffset()-Constants.NTERM_FIX_MOD, reverseTag.sequence().toString(),
+						reverseTag.getYIonCtermOffset()-Constants.CTERM_FIX_MOD, 1, minDelta, maxDelta, Mutables.gapTolerance);
 				cpool.addAll(yRes);
 			}
 			realTag++;
@@ -59,8 +59,8 @@ public class DBSearch {
 		if( primitiveTags == null || ixPDB == null )
 			return null;
 
-		double minDelta = (Mutables.minModifiedMass < 0)? Mutables.minModifiedMass - Mutables.gapTolerance : - Mutables.gapTolerance;
-		double maxDelta = (Mutables.maxModifiedMass > 0)? Mutables.maxModifiedMass + Mutables.gapTolerance : + Mutables.gapTolerance;
+		double minDelta = (Constants.minModifiedMass < 0)? Constants.minModifiedMass - Mutables.gapTolerance : - Mutables.gapTolerance;
+		double maxDelta = (Constants.maxModifiedMass > 0)? Constants.maxModifiedMass + Mutables.gapTolerance : + Mutables.gapTolerance;
 
 		TagPool longTags = primitiveTags.extractAbove(Constants.minTagLengthPeptideShouldContain);
 
@@ -70,16 +70,16 @@ public class DBSearch {
 			if( tag.get(0).getPeakProperty() != PeakProperty.C_TERM_Y_ION_ONLY &&
 					tag.get(3).getPeakProperty() != PeakProperty.N_TERM_Y_ION_ONLY )
 			{
-				LinkedList<TagPeptide> bRes= ixPDB.getMultiModPeptides(tag.getBIonNtermOffset()-Mutables.NTERM_FIX_MOD, tag.sequence().toString(),
-						tag.getBIonCtermOffset()-Mutables.CTERM_FIX_MOD, 0, minDelta, maxDelta, Mutables.gapTolerance);
+				LinkedList<TagPeptide> bRes= ixPDB.getMultiModPeptides(tag.getBIonNtermOffset()-Constants.NTERM_FIX_MOD, tag.sequence().toString(),
+						tag.getBIonCtermOffset()-Constants.CTERM_FIX_MOD, 0, minDelta, maxDelta, Mutables.gapTolerance);
 				cpool.addAll(bRes);
 			}
 			if( tag.get(0).getPeakProperty() != PeakProperty.N_TERM_B_ION_ONLY &&
 					tag.get(3).getPeakProperty() != PeakProperty.C_TERM_B_ION_ONLY )
 			{
 				Tag reverseTag= tag.reverseTag();
-				LinkedList<TagPeptide> yRes= ixPDB.getMultiModPeptides(reverseTag.getYIonNtermOffset()-Mutables.NTERM_FIX_MOD, reverseTag.sequence().toString(),
-						reverseTag.getYIonCtermOffset()-Mutables.CTERM_FIX_MOD, 1, minDelta, maxDelta, Mutables.gapTolerance);
+				LinkedList<TagPeptide> yRes= ixPDB.getMultiModPeptides(reverseTag.getYIonNtermOffset()-Constants.NTERM_FIX_MOD, reverseTag.sequence().toString(),
+						reverseTag.getYIonCtermOffset()-Constants.CTERM_FIX_MOD, 1, minDelta, maxDelta, Mutables.gapTolerance);
 				cpool.addAll(yRes);
 			}
 			realTag++;

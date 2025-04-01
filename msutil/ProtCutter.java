@@ -46,7 +46,7 @@ public class ProtCutter {
 
         if (!isEnzyme) {
             Arrays.fill(cleaveMap, C_TERM);
-            Mutables.numberOfEnzymaticTermini = 0;
+            Constants.numberOfEnzymaticTermini = 0;
         } else {
             for (int i = 0; i < nTermCleave.length(); i++) {
                 cleaveMap[nTermCleave.charAt(i) - 'A'] = N_TERM;

@@ -38,7 +38,7 @@ public class RetrivedPeptideMap extends HashMap<String, RetrivedPeptide> {
 			Peptide pept= new Peptide( entry.getKey(), entry.getValue().getProteinList() );
 			
 			if(!shortTags.isEmpty()){
-				entry.getValue().addExtraTags(shortTags, Mutables.maxModifiedMass, Mutables.minModifiedMass);
+				entry.getValue().addExtraTags(shortTags, Constants.maxModifiedMass, Constants.minModifiedMass);
 			}
 			
 			for( TagMatchToPept mt : entry.getValue().getTagList() ){

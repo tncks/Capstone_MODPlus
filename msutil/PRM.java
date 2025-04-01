@@ -66,7 +66,7 @@ public class PRM {
 			startpoint	= 	-endpoint;			
 		}//*/
 		else{
-			startpoint	= (int)((Mutables.minNoOfC13-Mutables.precursorAccuracy)*accuracy);
+			startpoint	= (int)((Constants.minNoOfC13-Mutables.precursorAccuracy)*accuracy);
 		}
 		
 		if( slack < Math.abs(startpoint) || slack < Math.abs(endpoint) ) return 0;

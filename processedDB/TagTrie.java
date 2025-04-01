@@ -270,10 +270,10 @@ public class TagTrie extends ProtDatabase {
 						for(int k=n_leftAAPos; k<c_rightAAPos; k++){
 							if( cutter.isCleavage(sequence[k], sequence[k+1]) ) missCleavage++;
 						}
-						if( missCleavage > Mutables.missCleavages ) continue;
+						if( missCleavage > Constants.missCleavages ) continue;
 					}
 					
-					double deltaM= orbMass - (preMass+sharedMass+sufMass+Mutables.NTERM_FIX_MOD+Mutables.CTERM_FIX_MOD);
+					double deltaM= orbMass - (preMass+sharedMass+sufMass+Constants.NTERM_FIX_MOD+Constants.CTERM_FIX_MOD);
 					if( ( deltaM < maxModified && deltaM > minModified ) || Math.abs(deltaM) <= tolerance  ){						
 						int peptPos = 1;					
 						if( sequence[n_leftAAPos-1] == delimeter || isPotentialProteinNterm(n_leftAAPos) ) peptPos = 0;//protein nterm
@@ -335,7 +335,7 @@ public class TagTrie extends ProtDatabase {
 				int ntt = 0;
 				if( Mutables.protease.isCleavage(sequence[endPos], nextAA) ) ntt++; // checking Cterm
 				if( Mutables.protease.isCleavage(prevAA, peptide.charAt(0)) || isPotentialProteinNterm(start) ) ntt++;  // checking Nterm
-				if( ntt < Mutables.numberOfEnzymaticTermini ) continue;
+				if( ntt < Constants.numberOfEnzymaticTermini ) continue;
 				
 				int protein = searchProtein(start);
 				String pname =  proteins[protein]; 

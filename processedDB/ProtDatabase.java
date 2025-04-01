@@ -195,7 +195,7 @@ public class ProtDatabase {
 	
 	private void construct( String fileName ) throws IOException  {		
 		int memSize = getMemorySizeForSequence( fileName );
-		if( Mutables.targetDecoy == 1 ) {
+		if( Constants.targetDecoy == 1 ) {
 			memSize *= 2;
 			sizeOfEntries *= 2;
 		}
@@ -243,7 +243,7 @@ public class ProtDatabase {
 		in.close();			
 		System.out.println( sizeOfEntries+" proteins / "  + sizeOfResidues+" residues" );
 		
-		if( Mutables.targetDecoy == 1 ) {
+		if( Constants.targetDecoy == 1 ) {
 			System.out.print("Decoy search checked.....  ");
 			int border = res;
 			StringBuffer forward = new StringBuffer();

@@ -77,7 +77,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 		int start = 0, end;
 		ArrayList<Gap> gapList = new ArrayList<>();
 		PTMPosition position;
-		double prevOffset = Mutables.NTERM_FIX_MOD;
+		double prevOffset = Constants.NTERM_FIX_MOD;
         double bStart = Constants.B_ION_OFFSET;
 		double yStart;
 		boolean hasQTag = false;
@@ -130,7 +130,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				position = PTMPosition.ANY_C_TERM;
 			
 			Gap tpGap = new Gap(matchedPeptide, start, end, bStart, Constants.Y_ION_OFFSET, 
-					((MatchedTag)this.last()).getCTermOffset()-Mutables.CTERM_FIX_MOD, position, sourceSpectrum, this.mostAbundantBYPeakIntensity);
+					((MatchedTag)this.last()).getCTermOffset()-Constants.CTERM_FIX_MOD, position, sourceSpectrum, this.mostAbundantBYPeakIntensity);
 			gapList.add( tpGap );
 		}
 		
@@ -564,7 +564,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
 				prun.setPTMs(ptmComb.ptmList, gap.getStart());
 				ix++;
 			}
-			if( modCount <= Mutables.maxPTMPerPeptide ) {
+			if( modCount <= Constants.maxPTMPerPeptide ) {
 				ptmComb.ptmComb = tempComb.toString();
 				answers.add(ptmComb);
 			}

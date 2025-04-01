@@ -297,10 +297,10 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 			}
 		}
 		
-		selected.add(new Peak(-1, Constants.B_ION_OFFSET+Mutables.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_B_ION_ONLY));
-		selected.add(new Peak(-1, Constants.Y_ION_OFFSET+Mutables.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_Y_ION_ONLY));
-		selected.add(new Peak(-1, correctedMW-Constants.H2O+Constants.Proton-Mutables.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_B_ION_ONLY));
-		selected.add(new Peak(-1, correctedMW+Constants.Proton-Mutables.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_Y_ION_ONLY));
+		selected.add(new Peak(-1, Constants.B_ION_OFFSET+Constants.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_B_ION_ONLY));
+		selected.add(new Peak(-1, Constants.Y_ION_OFFSET+Constants.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_Y_ION_ONLY));
+		selected.add(new Peak(-1, correctedMW-Constants.H2O+Constants.Proton-Constants.CTERM_FIX_MOD, 0, 1, PeakProperty.C_TERM_B_ION_ONLY));
+		selected.add(new Peak(-1, correctedMW+Constants.Proton-Constants.NTERM_FIX_MOD, 0, 1, PeakProperty.N_TERM_Y_ION_ONLY));
 
 		selectedPeak = new ArrayList<>(selected);
 		setScoreOfSelectedPeaks(selectedPeak, 1, Mutables.massToleranceForDenovo);

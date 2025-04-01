@@ -66,10 +66,10 @@ public class MSMScan {
 				
 		if( Mutables.reporterMassOfIsobaricTag != null ) removeReporterIons(rawPL, Mutables.reporterMassOfIsobaricTag);
 		
-		if( Mutables.rangeForIsotopeIncrement != 0 ) maxNoOfC13 = (int)Math.ceil( neutralMW / Mutables.rangeForIsotopeIncrement );
+		if( Constants.rangeForIsotopeIncrement != 0 ) maxNoOfC13 = (int)Math.ceil( neutralMW / Constants.rangeForIsotopeIncrement );
 		else maxNoOfC13 = Mutables.maxNoOfC13;
 		
-		if( Mutables.PPMTolerance != 0 ) precursorAccuracy = Constants.PPMtoDalton( neutralMW, Mutables.PPMTolerance );
+		if( Constants.PPMTolerance != 0 ) precursorAccuracy = Constants.PPMtoDalton( neutralMW, Constants.PPMTolerance );
 		else precursorAccuracy = Mutables.precursorAccuracy;
 		
 		precursorTolerance = precursorAccuracy + maxNoOfC13*Constants.IsotopeSpace;

@@ -8,8 +8,8 @@ import modi.Mutables;
 
 public class ChainTagPeptide extends MODPeptide {
 	
-	private static final double	a = ( Mutables.maxModifiedMass < 0 )?  Mutables.gapTolerance : Mutables.maxModifiedMass+Mutables.gapTolerance;
-	private static final double	b = ( Mutables.minModifiedMass > 0 )? -Mutables.gapTolerance : Mutables.minModifiedMass-Mutables.gapTolerance;
+	private static final double	a = ( Constants.maxModifiedMass < 0 )?  Mutables.gapTolerance : Constants.maxModifiedMass+Mutables.gapTolerance;
+	private static final double	b = ( Constants.minModifiedMass > 0 )? -Mutables.gapTolerance : Constants.minModifiedMass-Mutables.gapTolerance;
 	private static final double	shiftWindow = (a - b);
 	
 	final ArrayList<SequenceTag> mTags;

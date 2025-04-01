@@ -19,8 +19,8 @@ public class PtmMap {
 	private final int[][] ptmFreqTable;
 	private final ArrayList<PSM> history= new ArrayList<>();
 	
-	private final int lowestCol = (int)Math.round( Mutables.minModifiedMass );
-	private final int highestCol = (int)Math.round( Mutables.maxModifiedMass );
+	private final int lowestCol = (int)Math.round( Constants.minModifiedMass );
+	private final int highestCol = (int)Math.round( Constants.maxModifiedMass );
 	private final int columnSize= highestCol - lowestCol + 10;
 	private final int siteColumn= 23;
 	

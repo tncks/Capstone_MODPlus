@@ -99,10 +99,10 @@ public class OneMOD {
             for(int j=entry.getEnd(); j>=entry.getRight(); j--) {
 
                 int noOfET = ixPDB.getNTTOfPeptide(i, j, Mutables.protease );
-                if( noOfET >= Mutables.numberOfEnzymaticTermini )
+                if( noOfET >= Constants.numberOfEnzymaticTermini )
                 {
                     double massRange = delta + nTermDeletion + cTermDeletion;
-                    if( (massRange < Mutables.maxModifiedMass && massRange > Mutables.minModifiedMass) ||
+                    if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
                             Math.abs(massRange) < Mutables.precursorTolerance )
                     {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
@@ -114,7 +114,7 @@ public class OneMOD {
                         specMatrix[1][npi].setMass(0, ptm, intptm);
                         specMatrix[1][npi].refresh();
 
-                        double cellMass = Mutables.NTERM_FIX_MOD;
+                        double cellMass = Constants.NTERM_FIX_MOD;
                         for(int n=npi+1 ; n<cpi ; n++){
                             cellMass += MSMass.getAAMass(peptide.charAt(n-1));
                             specMatrix[0][n].setMass(cellMass, 0., 0);
@@ -123,8 +123,8 @@ public class OneMOD {
                             specMatrix[1][n].refresh();
                         }
 
-                        specMatrix[0][cpi-1].mass += Mutables.CTERM_FIX_MOD;
-                        specMatrix[1][cpi-1].mass += Mutables.CTERM_FIX_MOD;
+                        specMatrix[0][cpi-1].mass += Constants.CTERM_FIX_MOD;
+                        specMatrix[1][cpi-1].mass += Constants.CTERM_FIX_MOD;
 
                         temp = dynamic_programming(peptide.substring(npi, cpi-1), observedMass-pmzErr, rowMax, npi, cpi,
                                 specMatrix, prmTable, pmzErr);
@@ -166,10 +166,10 @@ public class OneMOD {
             for(int j=entry.getEnd(); j>=entry.getRight(); j--)	{
 
                 int noOfET = ixPDB.getNTTOfPeptide(i, j, Mutables.protease );
-                if( noOfET >= Mutables.numberOfEnzymaticTermini )
+                if( noOfET >= Constants.numberOfEnzymaticTermini )
                 {
                     double massRange = delta + nTermDeletion + cTermDeletion;
-                    if( (massRange < Mutables.maxModifiedMass && massRange > Mutables.minModifiedMass) ||
+                    if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
                             Math.abs(massRange) < Mutables.precursorTolerance )
                     {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
@@ -183,7 +183,7 @@ public class OneMOD {
                         specMatrix[1][npi].setMass(0, ptm, intptm);
                         specMatrix[1][npi].refresh();
 
-                        double cellMass = Mutables.NTERM_FIX_MOD;
+                        double cellMass = Constants.NTERM_FIX_MOD;
                         for(int n=npi+1 ; n<cpi ; n++){
                             cellMass += MSMass.getAAMass(peptide.charAt(n-1));
                             specMatrix[0][n].setMass(cellMass, 0., 0);
@@ -191,8 +191,8 @@ public class OneMOD {
                             specMatrix[1][n].setMass(cellMass, ptm, intptm);
                             specMatrix[1][n].refresh();
                         }
-                        specMatrix[0][cpi-1].mass += Mutables.CTERM_FIX_MOD;
-                        specMatrix[1][cpi-1].mass += Mutables.CTERM_FIX_MOD;
+                        specMatrix[0][cpi-1].mass += Constants.CTERM_FIX_MOD;
+                        specMatrix[1][cpi-1].mass += Constants.CTERM_FIX_MOD;
 
                         temp = DPwithMassCorrection(peptide.substring(npi, cpi-1), observedMass-pmzErr, rowMax, npi, cpi,
                                 specMatrix, prmTable, pmzErr);
@@ -235,7 +235,7 @@ public class OneMOD {
                                          MatCell[][] specMatrix, PRM prmTable, double pmzErr){
 
         int colMax= smEnd-smStart, endingTag= 1;
-        if( specMatrix[endingTag][smStart].nominalDelta > Mutables.maxModifiedMass ) return null;
+        if( specMatrix[endingTag][smStart].nominalDelta > Constants.maxModifiedMass ) return null;
 
         double upperLimit = obsMass+Mutables.fragmentTolerance;
         specMatrix[0][smStart].isAAJump= 1;

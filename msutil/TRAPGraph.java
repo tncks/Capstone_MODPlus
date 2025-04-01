@@ -20,7 +20,7 @@ public class TRAPGraph extends IonGraph {
 		int len = sequence.length()-1;	
 		int i;
 		
-		double ion_mz= Constants.B_ION_OFFSET + Mutables.NTERM_FIX_MOD;
+		double ion_mz= Constants.B_ION_OFFSET + Constants.NTERM_FIX_MOD;
 		for(i=0; i<len; i++ ){
 			ion_mz += MSMass.getAAMass( sequence.charAt(i) );
 			if( ptmMass[i] != 0 ){
@@ -38,9 +38,9 @@ public class TRAPGraph extends IonGraph {
 			if( ptmList == null ) modifiedResd += 1;
 			else modifiedResd += ptmList[i].getPenalty();
 		}
-		calculatedMW = ion_mz - Constants.B_ION_OFFSET + Constants.H2O + Mutables.CTERM_FIX_MOD;
+		calculatedMW = ion_mz - Constants.B_ION_OFFSET + Constants.H2O + Constants.CTERM_FIX_MOD;
 		
-		ion_mz= Constants.Y_ION_OFFSET + Mutables.CTERM_FIX_MOD;
+		ion_mz= Constants.Y_ION_OFFSET + Constants.CTERM_FIX_MOD;
 		for(i=len; i>0; i-- ){
 			ion_mz += MSMass.getAAMass( sequence.charAt(i) );
 			ion_mz += ptmMass[i];		
