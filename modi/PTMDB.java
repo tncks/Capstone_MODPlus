@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import moda.ThreadLocalMutables;
 import modi.Constants;
 import modi.Mutables;
 
@@ -374,14 +376,14 @@ public class PTMDB extends ArrayList<PTM> {
         ArrayList<PTMRun> newGapInterpret = new ArrayList<>();
 
         double ierror = Math.abs(massDiff);
-        if (ierror < Mutables.nonModifiedDelta) {
+        if (ierror < (ThreadLocalMutables.get().nonModifiedDelta)) {
             PTMSearchResult noModResult = new PTMSearchResult(newGapInterpret, true);
             resultCache.put(key, noModResult);
             return noModResult;
 
         }
 
-        if (ierror < Mutables.gapTolerance) {
+        if (ierror < (ThreadLocalMutables.get().gapTolerance)) {
             PTMRun run = new PTMRun();
             run.setError(ierror);
             newGapInterpret.add(run);
@@ -909,6 +911,12 @@ public class PTMDB extends ArrayList<PTM> {
             }
         }
 
+        boolean isWithinAccuracy(double err) {
+            if ((ThreadLocalMutables.get().gapAccuracy) > 0.5) return true;
+            int isoerr = Constants.round(err / Constants.IsotopeSpace);
+            return !(Math.abs(err - isoerr * Constants.IsotopeSpace) > (ThreadLocalMutables.get().gapAccuracy));
+        }
+
         /**
          * Recursive depth-first search for PTM combinations
          * This method is thread-safe because it uses thread-local data
@@ -920,7 +928,7 @@ public class PTMDB extends ArrayList<PTM> {
                 double error = Math.abs(mass - massDiff);
 
                 // Check if error is within tolerance
-                if (error <= Mutables.gapTolerance && Mutables.isWithinAccuracy(error)) {
+                if (error <= (ThreadLocalMutables.get().gapTolerance) && isWithinAccuracy(error)) {
                     PTMRun run = new PTMRun();
                     // Add all PTM occurrences
                     for (int i = 0; i < seq.size(); i++) {

@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.StringTokenizer;
 
 public class MGFIterator extends ScanIterator {
+	public static int dbg = 1;
 		
 	public MGFIterator( String fileName ) throws IOException {	
 		super(fileName);
@@ -28,7 +29,7 @@ public class MGFIterator extends ScanIterator {
 
 	// single thread -> multi thread issue can occur here due to MSMScan
 	public ArrayList<MSMScan> getNext() throws IOException {
-		System.out.println("begin ion(debug)");
+		//System.out.println("begin ion(debug)");
 		
 		ArrayList<MSMScan> scanlist = new ArrayList<>();
 		MSMScan curScan;
@@ -106,7 +107,10 @@ public class MGFIterator extends ScanIterator {
 				break;
 			}	
 		}
-		System.out.println("end ion(debug)");
+		//System.out.println("end ion(debug)");
+
+
+		System.out.println("MODPlus | " + (dbg++) + "/");
 		return scanlist;
 	}
 

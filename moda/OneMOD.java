@@ -17,9 +17,16 @@ import modi.TagPool;
 
 public class OneMOD {
 
-    private static int bestOnlineScore = 2;
 
-    public static DPHeap getHeatedPeptides( StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection ){
+
+    private int bestOnlineScore = 2;
+
+
+    public OneMOD () {
+
+    }
+
+    public  DPHeap getHeatedPeptides( StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection ){
         bestOnlineScore = 2;
         DPHeap annotation = null;
 
@@ -40,7 +47,7 @@ public class OneMOD {
         return annotation;
     }
 
-    public static DPHeap run_static_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
+    public  DPHeap run_static_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
 
         PRM prmTable;
         if( graph.getCharge() > 2 ) prmTable= new PRMforHighCharge(graph);
@@ -58,7 +65,7 @@ public class OneMOD {
 
         return topList;
     }
-    public static DPHeap run_dynamic_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
+    public  DPHeap run_dynamic_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
 
         PRM prmTable;
         if( graph.getCharge() > 2 ) prmTable= new PRMforHighCharge(graph);
@@ -76,7 +83,7 @@ public class OneMOD {
         return topList;
     }
 
-    private static void static_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
+    private  void static_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
         double 				observedMass = prmTable.getPeptMass();
         String 				peptide = entry.getPeptide(ixPDB);
         double 				peptMass = MSMass.getPepMass(peptide);
@@ -103,7 +110,7 @@ public class OneMOD {
                 {
                     double massRange = delta + nTermDeletion + cTermDeletion;
                     if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Mutables.precursorTolerance )
+                            Math.abs(massRange) < (ThreadLocalMutables.get().precursorTolerance) )
                     {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
                         int intptm = Constants.round(massRange);
@@ -142,7 +149,7 @@ public class OneMOD {
         }
     }
 
-    private static void dynamic_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
+    private  void dynamic_single_align(MODPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
         double 				observedMass = prmTable.getPeptMass();
         String 				peptide = entry.getPeptide(ixPDB);
         double 				peptMass = MSMass.getPepMass(peptide);
@@ -170,7 +177,7 @@ public class OneMOD {
                 {
                     double massRange = delta + nTermDeletion + cTermDeletion;
                     if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Mutables.precursorTolerance )
+                            Math.abs(massRange) < (ThreadLocalMutables.get().precursorTolerance) )
                     {
                         double ptm = MODaConst.ptmUnit.getPtmMass(massRange);
                         int intptm = Constants.round(massRange);
@@ -208,7 +215,7 @@ public class OneMOD {
         }
     }
 
-    static DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+     DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
                                           MatCell[][] specMatrix, PRM prmTable, double pmzErr){
 
         DPPeptide best= new DPPeptide(), temp= null;
@@ -231,7 +238,7 @@ public class OneMOD {
         return best;
     }
 
-    static DPPeptide dynamic_programming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+     DPPeptide dynamic_programming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
                                          MatCell[][] specMatrix, PRM prmTable, double pmzErr){
 
         int colMax= smEnd-smStart, endingTag= 1;

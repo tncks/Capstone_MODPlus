@@ -1,5 +1,6 @@
 package msutil;
 
+import moda.ThreadLocalMutables;
 import modi.Constants;
 import modi.Mutables;
 
@@ -57,16 +58,17 @@ public class PRM {
 
 	public double massCorrection( boolean dynamicCorrection )
 	{
+		Mutables mut = ThreadLocalMutables.get();
 		int slack = 56*accuracy;
 		int size = bTable.length - slack;
 	
 		int startpoint;
-		int endpoint	= (int)(Mutables.precursorTolerance*accuracy);
-		if( Mutables.maxNoOfC13 == 0 ){
+		int endpoint	= (int)(mut.precursorTolerance*accuracy);
+		if( mut.maxNoOfC13 == 0 ){
 			startpoint	= 	-endpoint;			
 		}//*/
 		else{
-			startpoint	= (int)((Constants.minNoOfC13-Mutables.precursorAccuracy)*accuracy);
+			startpoint	= (int)((Constants.minNoOfC13-mut.precursorAccuracy)*accuracy);
 		}
 		
 		if( slack < Math.abs(startpoint) || slack < Math.abs(endpoint) ) return 0;

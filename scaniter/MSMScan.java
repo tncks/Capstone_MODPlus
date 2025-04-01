@@ -23,6 +23,26 @@ public class MSMScan {
 	private final int 		charge;
 	private Spectrum 	peaklist;
 
+	public double getPrecursorTolerance() {
+		return precursorTolerance;
+	}
+
+	public double getPrecursorAccuracy() {
+		return precursorAccuracy;
+	}
+
+	public double getGapTolerance() {
+		return gapTolerance;
+	}
+
+	public double getNonModifiedDelta() {
+		return nonModifiedDelta;
+	}
+
+	public int getMaxNoOfC13() {
+		return maxNoOfC13;
+	}
+
 	private double 	precursorTolerance = 0;
 	private double 	precursorAccuracy= 0;
 	private double 	gapTolerance = 0;
@@ -50,13 +70,7 @@ public class MSMScan {
 		this.neutralMW 	= (pmz - Constants.Proton)*charge;
 	}
 
-	public Spectrum getSpectrum() { 
-		Mutables.precursorTolerance = precursorTolerance;
-		Mutables.precursorAccuracy	= precursorAccuracy;
-		Mutables.gapTolerance 		= gapTolerance;
-		Mutables.gapAccuracy 		= precursorAccuracy + 2*Mutables.fragmentTolerance;
-		Mutables.nonModifiedDelta 	= nonModifiedDelta;
-		Mutables.maxNoOfC13 		= maxNoOfC13;
+	public Spectrum getSpectrum() {
 		return peaklist; 
 	}
 
@@ -67,10 +81,10 @@ public class MSMScan {
 		if( Mutables.reporterMassOfIsobaricTag != null ) removeReporterIons(rawPL, Mutables.reporterMassOfIsobaricTag);
 		
 		if( Constants.rangeForIsotopeIncrement != 0 ) maxNoOfC13 = (int)Math.ceil( neutralMW / Constants.rangeForIsotopeIncrement );
-		else maxNoOfC13 = Mutables.maxNoOfC13;
+		else maxNoOfC13 = Mutables.DEFAULT_MAXNOOFC13; ///////////////////// default ?
 		
 		if( Constants.PPMTolerance != 0 ) precursorAccuracy = Constants.PPMtoDalton( neutralMW, Constants.PPMTolerance );
-		else precursorAccuracy = Mutables.precursorAccuracy;
+		else precursorAccuracy = Mutables.DEFAULT_PRECURSORACCURACY; ///////////////////// default ?
 		
 		precursorTolerance = precursorAccuracy + maxNoOfC13*Constants.IsotopeSpace;
 		

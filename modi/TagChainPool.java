@@ -9,8 +9,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import msutil.PGraph;
-import msutil.Scoring;
+import moda.ThreadLocalMutables;
+import msutil.*;
 
 public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 
@@ -91,6 +91,30 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 		}
 		return output.toString();
 	}
+
+	boolean isWithinTolerance(double calc, double obsv, double tol) {
+
+		if (Constants.minNoOfC13 == 0 && (ThreadLocalMutables.get().maxNoOfC13) == 0) {
+			return !(Math.abs(calc - obsv) > tol);
+		} else {
+			double tempError = obsv - calc;
+			int isoerr = Constants.round(tempError / Constants.IsotopeSpace);
+			if (isoerr < Constants.minNoOfC13 || (ThreadLocalMutables.get().maxNoOfC13) < isoerr) return false;
+			return !(Math.abs(tempError - isoerr * Constants.IsotopeSpace) > (ThreadLocalMutables.get().precursorAccuracy));
+		}
+	}
+
+	int getModEyeRankScore( String peptide, double[] ptms, PGraph graph ){
+		IonGraph iGraph;
+		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) iGraph = new TOFGraph(peptide, ptms, graph);
+		else iGraph= new TRAPGraph(peptide, ptms, graph);
+
+		if( !isWithinTolerance(iGraph.getCalculatedMW(), graph.getObservedMW(), (ThreadLocalMutables.get().precursorTolerance)) )
+			return -1;
+
+		iGraph.setScore(graph);
+		return iGraph.getRankScore();
+	}
 	
 	public ArrayList<AnsPeptide> getAnswerPeptides( PGraph graph ){		
 		AnsHeap answerPepts = new AnsHeap();
@@ -111,7 +135,7 @@ public class TagChainPool extends TreeMap<Peptide, LinkedList<TagChain>> {
 			while( iter.hasNext() ){
 				PTMCombination p = iter.next();
 	
-				int s = Scoring.getModEyeRankScore(pept, p.ptms, graph);
+				int s = getModEyeRankScore(pept, p.ptms, graph);
 				if( s < 0 ) continue;
 				AnsPeptide candidate = new AnsPeptide(entry.getKey(), p.ptmComb, p.ptms, p.ptmList, s);
 				answerPepts.add( candidate ); 

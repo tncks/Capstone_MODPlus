@@ -12,3 +12,15 @@
             // 전역변수 업데이트 하기 직전에 -> 스택에 전역변수 값을 PUSH. -> 전역변수 업데이트 -> 이것저것 하고 -> 전역변수 원상태로(pop해와서 세팅) 만들기
             // 근데 여기에 멀티 스레딩이라는 기법이 위 특성을 활용하며 동시적으로 적용되려면?
             // 정확히 언제 PUSH , 어느 케이스에서 POP ? 이것도 룰이나 원칙을 명확하게 정해놔야 하지 않을까 싶다.
+
+            // Change note : 해결 완료.
+
+
+            //// Collections.sort() 에서 race condition 이 생길 가능성.. static method 이기에.. 염두
+
+
+            // 이슈 노트
+            //
+                    // Main issues and problematics analyzed : static functions and static global variables and shared resource.
+                    // No problem with Constants.static final primitives but problem with Mutables.static shared variables.
+                    // Solution -> Mutable data should have contextual memory and local data management way (stack, context, etc.)

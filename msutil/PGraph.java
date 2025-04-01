@@ -2,6 +2,7 @@ package msutil;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import moda.ThreadLocalMutables;
 import modi.Constants;
 import modi.Mutables;
 
@@ -44,7 +45,7 @@ public class PGraph extends ArrayList<PNode>{
 	public double correctMW( boolean dynamicCorrection ){ 
 		
 		if( Constants.INSTRUMENT_TYPE == Constants.msms_type.QTOF ) return obsvMW;				
-		if( Mutables.precursorTolerance <= Mutables.fragmentTolerance ) return obsvMW;	
+		if( (ThreadLocalMutables.get().precursorTolerance) <= Mutables.fragmentTolerance ) return obsvMW;
 		
 		PRM prmTable;
 		if( charge > 2 ) prmTable= new PRMforHighCharge(this);

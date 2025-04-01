@@ -1,5 +1,7 @@
 package modi;
 
+import moda.ThreadLocalMutables;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,7 +151,7 @@ public class TagChain extends TreeSet<SpecInterpretation> implements Comparable<
         this.score= 0;
 		for( SpecInterpretation t : this ){
 			if(t instanceof Gap gap) {
-                if( Math.abs( gap.getOffset() ) > Mutables.gapTolerance ) {
+                if( Math.abs( gap.getOffset() ) > (ThreadLocalMutables.get().gapTolerance) ) {
 					modtype.add( Constants.round(gap.getOffset()) );
 				}
 			}

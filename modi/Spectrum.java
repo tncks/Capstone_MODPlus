@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
+
+import moda.ThreadLocalMutables;
 import modi.Constants;
 import modi.Mutables;
 
@@ -93,10 +95,10 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 	}
 
 	public PGraph getPeakGraph(){ //MOD SERIES
-		
+
 		int binSize= 100, considered= 10;
 		double minimumCut= bpIntensity*0.001;
-		double precursoeRange= Mutables.precursorTolerance/this.charge + Mutables.fragmentTolerance;
+		double precursoeRange= (ThreadLocalMutables.get().precursorTolerance)/this.charge + Mutables.fragmentTolerance;
 		
 		PGraph graph = new PGraph(this.observedMW, charge);
 		
@@ -314,6 +316,28 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		for(Peak peak : selectedPeak)
 			System.out.println(peak);
 	}
+
+	double getMassDifference(Peak p1, Peak p2)
+	{
+		return Math.abs(p1.mass - p2.mass);
+	}
+
+	boolean		extendable(Tag t1, Tag t2)
+	{
+		boolean ex= t1.getLast() == t2.getFirst();
+		return ex;
+	}
+
+	TagPool extendTags(TagPool target, TagPool source)
+	{
+		TagPool result = new TagPool();
+		for(int i=0; i<target.size(); i++)
+			for(int j=0; j<source.size(); j++)
+				if(extendable(target.get(i), source.get(j)))
+					result.add(Tag.merge(target.get(i), source.get(j)));
+
+		return result;
+	}
 	
 	public	TagPool	generateTags( int minTagLength, int minTagLengthPeptideShouldContain, double massTolerance ) {// by NA
 		// selectedPeak array should be sorted before generating Tags
@@ -325,7 +349,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		for(int i=0; i<selectedPeak.size()-1; i++)
 		{		
 			for(int j=i+1; j<selectedPeak.size(); j++){
-				double diff = Peak.getMassDifference(selectedPeak.get(i), selectedPeak.get(j));
+				double diff = getMassDifference(selectedPeak.get(i), selectedPeak.get(j));
 				if( diff > maxGap )
 					break;
 				
@@ -342,7 +366,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		
 		for(int i=1; i<minTagLengthPeptideShouldContain; i++)
 		{
-			tempTags = TagPool.extendTags(tempTags, oneLengthTagPool);		
+			tempTags = extendTags(tempTags, oneLengthTagPool);
 			tags.addAll(tempTags);
 		}//*/		
 		
@@ -392,7 +416,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		for(int i=0; i<virtualDoublyPeak.size()-1; i++)
 		{
 			for(int j=i+1; j<virtualDoublyPeak.size(); j++){
-				double diff = Peak.getMassDifference(virtualDoublyPeak.get(i), virtualDoublyPeak.get(j));
+				double diff = getMassDifference(virtualDoublyPeak.get(i), virtualDoublyPeak.get(j));
 				if( diff > maxGap )
 					break;
 				
@@ -408,7 +432,7 @@ public class Spectrum extends ArrayList<Peak> implements Comparable<Spectrum> {
 		TagPool tempTags			= (TagPool)tags.clone();
 		
 		for(int i=1; i<minTagLengthPeptideShouldContain; i++) {
-			tempTags = TagPool.extendTags(tempTags, oneLengthTagPool);		
+			tempTags = extendTags(tempTags, oneLengthTagPool);
 			tags.addAll(tempTags);
 		}	
 

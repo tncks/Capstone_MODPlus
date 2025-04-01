@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
+import moda.ThreadLocalMutables;
 import msutil.PGraph;
 
 public class Gap implements SpecInterpretation {
@@ -232,9 +233,15 @@ public class Gap implements SpecInterpretation {
 		
 		return score;
 	}
+
+	boolean isInModifiedRange(double v) {
+		if (Constants.minModifiedMass - (ThreadLocalMutables.get().gapTolerance) < v && v < Constants.maxModifiedMass + (ThreadLocalMutables.get().gapTolerance))
+			return true;
+		else return Math.abs(v) <= (ThreadLocalMutables.get().gapTolerance);
+	}
 	
 	public boolean isReasonable(){
-		if( !Mutables.isInModifiedRange( this.offset ) ) return false;
+		if( !isInModifiedRange( this.offset ) ) return false;
 		
 	//	if ( this.offset > 0 ) return true;
 
@@ -245,7 +252,7 @@ public class Gap implements SpecInterpretation {
 		double minMod = Mutables.variableModifications.minimumModifiedMass(seq, pos);
 		double maxMod = Mutables.variableModifications.maximumModifiedMass(seq, pos);
 	//	System.out.println( this.offset + " " + maxMod + " " +minMod + " " + matchedPeptide.subSequence(start, end+1));
-        return !(this.offset < (minMod - Mutables.gapTolerance)) && !(this.offset > (maxMod + Mutables.gapTolerance));//*/
+        return !(this.offset < (minMod - (ThreadLocalMutables.get().gapTolerance))) && !(this.offset > (maxMod + (ThreadLocalMutables.get().gapTolerance)));//*/
     }
 
 	public double getScore(PTMRun run, PGraph graph)

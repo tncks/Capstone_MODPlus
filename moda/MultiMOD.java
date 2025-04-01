@@ -20,11 +20,16 @@ import modi.TagPool;
 
 public class MultiMOD {
 
-    private static int bestOnlineScore = 2;
 
 
+    private int bestOnlineScore = 2;
 
-    public static DPHeap getHeatedPeptides( StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection ){
+
+    public MultiMOD () {
+
+    }
+
+    public  DPHeap getHeatedPeptides( StemTagTrie stemDB, PGraph graph, TagPool tPool, boolean dynamicPMCorrection ){
         bestOnlineScore = 2;
         DPHeap annotation = null;
 
@@ -44,7 +49,7 @@ public class MultiMOD {
         return annotation;
     }
 
-    public static DPHeap run_static_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
+    public  DPHeap run_static_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
 
         PRM prmTable;
         if( graph.getCharge() > 2 ) prmTable= new PRMforHighCharge(graph);
@@ -61,7 +66,7 @@ public class MultiMOD {
         return topList;
     }
 
-    public static DPHeap run_dynamic_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
+    public  DPHeap run_dynamic_mass_mode( CandidateContainer cpool, PGraph graph, TagTrie ixPDB ){
 
         PRM prmTable;
         if( graph.getCharge() > 2 ) prmTable= new PRMforHighCharge(graph);
@@ -78,7 +83,7 @@ public class MultiMOD {
         return topList;
     }
 
-    private static void static_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
+    private  void static_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
         double 				observedMass = prmTable.getPeptMass();
         String 				peptide = entry.getPeptide(ixPDB);
         double 				peptMass = MSMass.getPepMass(peptide);
@@ -121,7 +126,7 @@ public class MultiMOD {
                     double massRange = deltas[rowMax-1] + nTermDeletion + cTermDeletion;
 
                     if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Mutables.precursorTolerance )
+                            Math.abs(massRange) < (ThreadLocalMutables.get().precursorTolerance) )
                     {
                         double[] ptms = new double[rowMax];
                         int[] intptms = new int[rowMax];
@@ -167,7 +172,7 @@ public class MultiMOD {
         }
     }
 
-    private static void dynamic_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
+    private  void dynamic_multi_align(ChainTagPeptide entry, PRM prmTable, TagTrie ixPDB, DPHeap topList){
         double 				observedMass = prmTable.getPeptMass();
         String 				peptide = entry.getPeptide(ixPDB);
         double 				peptMass = MSMass.getPepMass(peptide);
@@ -213,7 +218,7 @@ public class MultiMOD {
                 {
                     double massRange = deltas[rowMax-1] + nTermDeletion + cTermDeletion;
                     if( (massRange < Constants.maxModifiedMass && massRange > Constants.minModifiedMass) ||
-                            Math.abs(massRange) < Mutables.precursorTolerance )
+                            Math.abs(massRange) < (ThreadLocalMutables.get().precursorTolerance) )
                     {
                         double[] ptms = new double[rowMax];
                         int[] intptms = new int[rowMax];
@@ -262,7 +267,7 @@ public class MultiMOD {
         }
     }
 
-    static DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+     DPPeptide DPwithMassCorrection(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
                                           MatCell[][] specMatrix, PRM prmTable, double pmzErr, int[] ionType){
 
         DPPeptide best= new DPPeptide(), temp= null;
@@ -287,7 +292,7 @@ public class MultiMOD {
         return best;
     }
 
-    static DPPeptide dynamicProgramming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+     DPPeptide dynamicProgramming(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
                                         MatCell[][] specMatrix, PRM prmTable, double pmzErr){
 
         int colMax= smEnd-smStart;
@@ -382,7 +387,7 @@ public class MultiMOD {
         return identification;
     }
 
-    static DPPeptide dynamicProgrammingWithoutTags(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
+     DPPeptide dynamicProgrammingWithoutTags(String peptide, double obsMass, int rowMax, int smStart, int smEnd,
                                                    MatCell[][] specMatrix, PRM prmTable, double pmzErr){
 
         int colMax= smEnd-smStart, endingTag= rowMax-1;

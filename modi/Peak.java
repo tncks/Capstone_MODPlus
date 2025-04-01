@@ -64,10 +64,10 @@ public class Peak implements Comparable<Peak> {
 		else
 			return 0;
 	}
-	public static double getMassDifference(Peak p1, Peak p2)
-	{
-		return Math.abs(p1.mass - p2.mass);
-	}
+//	public static double getMassDifference(Peak p1, Peak p2)
+//	{
+//		return Math.abs(p1.mass - p2.mass);
+//	}
 	
 	public String toString() {
 		return Constants.getString(mass) + " " + this.property;

@@ -98,16 +98,16 @@ public class TagPool extends ArrayList<Tag> {
 	}
 	
 	
-	public static TagPool extendTags(TagPool target, TagPool source)
-	{
-		TagPool result = new TagPool();
-		for(int i=0; i<target.size(); i++)
-			for(int j=0; j<source.size(); j++)
-				if(Tag.extendable(target.get(i), source.get(j)))
-					result.add(Tag.merge(target.get(i), source.get(j)));
-
-		return result;
-	}
+//	public static TagPool extendTags(TagPool target, TagPool source)
+//	{
+//		TagPool result = new TagPool();
+//		for(int i=0; i<target.size(); i++)
+//			for(int j=0; j<source.size(); j++)
+//				if(Tag.extendable(target.get(i), source.get(j)))
+//					result.add(Tag.merge(target.get(i), source.get(j)));
+//
+//		return result;
+//	}
 	
 	public String toString()
 	{		
