@@ -37,6 +37,8 @@ public class MatCell {
 	boolean canObliqueJumpFrom( MatCell a ){		
 		if( a.isAAJump < 1 )
 			return false;
-        return a.isInsideTag > 0 && this.isInsideTag < 2;
+
+		int tmp = a.isInsideTag;
+        return tmp > 0 && tmp < 2;
     }
 }

@@ -353,6 +353,8 @@ public class MODPlus {
         }
     }
 
+    // javac -cp ".:lib/*" -d out $(find . -name "*.java")
+    // java -cp "out:lib/*" MODPlus param.xml
     static int modplus_mod_search(int numThreads) throws Exception {
         System.out.println("Starting MODPlus for modification search!");
 
