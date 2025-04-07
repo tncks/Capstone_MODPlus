@@ -35,13 +35,6 @@ public class Constants {
 		TRAP,
 	}
 	
-	public enum instrument_resolution {
-	}
-	
-	public enum experimental_protocol {
-		iTRAQ,		
-	}
-	
 	public static String 		PROTEIN_DB_LOCAL_PATH;
 	public static final String 		DECOY_LABEL="dec_";
 

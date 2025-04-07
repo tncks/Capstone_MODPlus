@@ -364,6 +364,10 @@ public class MODPlus {
         Constants.minTagLengthPeptideShouldContain = 3;
         Constants.tagChainPruningRate = 0.4;
 
+        // 🔸 병렬처리 전에 Constants 상태 출력
+        System.out.println("---- [Before Parallel Execution] Constants Snapshot ----");
+        printConstantsState();
+
         // 결과 저장 identifier 설정
         String identifier = Constants.SPECTRUM_LOCAL_PATH;
         identifier = identifier.substring(0, identifier.lastIndexOf('.'));
@@ -409,6 +413,7 @@ public class MODPlus {
 
 
         // -----
+        /*
         int batchSize = 2; // 배치 크기 설정
 
         // latch는 배치의 개수로 설정
@@ -429,17 +434,33 @@ public class MODPlus {
 
         // 모든 배치가 끝날 때까지 기다림
         latch.await();
+        */
 
-
-        /*
+        CountDownLatch latch = new CountDownLatch(allScans.size());
         // step 1 : 스캔 프로세싱
         for (int i = 0; i < allScans.size(); i++) {
             final int scanIndex = i;
-            executor.execute(() -> processScanAtIndex(scanIndex, allScans, ixPDB, considerIsotopeErr, results, latch, totalSize));
+            executor.execute(() -> {
+                try {
+                    System.out.println("[Thread] Processing scan index " + scanIndex + " / " + totalSize);
+                    processScanAtIndex(scanIndex, allScans, ixPDB, considerIsotopeErr, results, totalSize);
+                } catch (Exception e) {
+                    System.err.println("Exception on scanIndex = " + scanIndex);
+                    e.printStackTrace();
+                } finally {
+                    latch.countDown(); // latch 감소는 반드시 보장
+                }
+            });
         }
+
+
         latch.await();
         // 스캔 종료
-        */
+
+
+        // 🔸 병렬처리 전에 Constants 상태 출력
+        System.out.println("---- [Before Parallel Execution] Constants Snapshot ----");
+        printConstantsState();
 
         // step2 : 결과를 file write.
         saveResults(scaniter.getFileName(), allScans, results, identifier);
@@ -451,6 +472,34 @@ public class MODPlus {
         System.out.println("[MOD-Plus] Elapsed Time : " + (System.currentTimeMillis() - startTime) / 1000 + " Sec");
         return 0;
     }
+
+    private static void printConstantsState() {
+        System.out.println("MAX_TAG_SIZE = " + Constants.MAX_TAG_SIZE);
+        System.out.println("minTagLength = " + Constants.minTagLength);
+        System.out.println("minTagLengthPeptideShouldContain = " + Constants.minTagLengthPeptideShouldContain);
+        System.out.println("tagChainPruningRate = " + Constants.tagChainPruningRate);
+
+        System.out.println("precursorTolerance = " + Constants.precursorTolerance);
+        System.out.println("fragmentTolerance = " + Constants.fragmentTolerance);
+        System.out.println("gapTolerance = " + Constants.gapTolerance);
+
+        System.out.println("minModifiedMass = " + Constants.minModifiedMass);
+        System.out.println("maxModifiedMass = " + Constants.maxModifiedMass);
+
+        System.out.println("MSResolution = " + Constants.MSResolution);
+        System.out.println("MSMSResolution = " + Constants.MSMSResolution);
+
+        System.out.println("maxPTMPerPeptide = " + Constants.maxPTMPerPeptide);
+        System.out.println("maxPTMPerGap = " + Constants.maxPTMPerGap);
+
+        if (Constants.variableModifications != null)
+            System.out.println("variableModifications.size = " + Constants.variableModifications.size());
+        if (Constants.fixedModifications != null)
+            System.out.println("fixedModifications.size = " + Constants.fixedModifications.size());
+
+        System.out.println("----------------------------------------------------------");
+    }
+
 
     private static void processScanAtIndex(int scanIndex,
             List<ArrayList<MSMScan>> allScans,

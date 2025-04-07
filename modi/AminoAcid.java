@@ -10,13 +10,13 @@ public class AminoAcid implements Comparable<AminoAcid> {
 	//private final String	fullName;
 	private final int		index;		// used for Bucket indexing
 	private boolean isLabelled = false;
-	
+
 	private static int indexSize = 0;
-	
+
 	public int compareTo( AminoAcid o ){
 		return this.residue - o.residue;
 	}
-	
+
 	public AminoAcid(char residue, double monoMass, double avgMass, String fullName, int index )
 	{
 		this.residue	= residue;
@@ -24,17 +24,17 @@ public class AminoAcid implements Comparable<AminoAcid> {
 		this.avgMass	= avgMass;
 		//this.fullName	= fullName;
 		this.index		= index;
-		
+
 		if (AminoAcid.indexSize<index+1) AminoAcid.indexSize = index+1;
 	}
-	
-	public String toString()				
+
+	public String toString()
 	{
 		if(index == 24)
 			return "N'";
 		else if(index == 25)
 			return "Q'";
-		return String.valueOf(residue); 
+		return String.valueOf(residue);
 	}
 
 	public char			getResidue()		{ return residue; }
@@ -51,7 +51,7 @@ public class AminoAcid implements Comparable<AminoAcid> {
 	public static ArrayList<AminoAcid> getCode(double mass, double massTolerance)
 	{
 		ArrayList<AminoAcid> resultCode = new ArrayList<>();
-		// linear search, might be optimised later 
+		// linear search, might be optimised later
 		for(int i=0; i<aaTable.length; i++)  {
 			if( aaTable[i] == null ) {
             }
@@ -69,10 +69,10 @@ public class AminoAcid implements Comparable<AminoAcid> {
 			return aaTable[residue-'a'];
 		else if (residue>='A' && residue<='Z')
 			return aaTable[residue-'A'];
-		
+
 		return null;
 	}
-	
+
 	public	static AminoAcid getAminoAcid(int index) {
 		for(AminoAcid aa : aaTable)
 			if(aa != null && aa.getIndex() == index)
@@ -80,12 +80,12 @@ public class AminoAcid implements Comparable<AminoAcid> {
 
 		return null;
 	}
-	
+
 	private static double minAAMass = 57.02146;
 	private static double maxAAMass = 186.07931;
-	// Static table containing Predefined Amino Acids	
+	// Static table containing Predefined Amino Acids
 	private static final AminoAcid [] aaTable =
-	{		
+	{
 		new AminoAcid('A',	71.037114,	71.08,	"alanine",			0),
 		null, //new AminoAcid('B',	0,			0,		"_invalid_" ),
 	//	new AminoAcid('C',	103.00919+57.0215,	103.1+57.0213,	"cysteine",			1),
@@ -115,27 +115,22 @@ public class AminoAcid implements Comparable<AminoAcid> {
 		null, //new AminoAcid('Z',	0,			0,		"_invalid_"),
 		null, //new AminoAcid('*',	0,			0,		"_invalid_"),
 		null //new AminoAcid('-',	0,			0,		"_invalid_"),
-	//	new AminoAcid('@',	113.08406,	113.2, "leusine or isoleucine",	20),
-	//	new AminoAcid('*',			0,		0, "N-terminal",			21),
-	//	new AminoAcid('-',			0,		0, "C-terminal",			22),
-	//	new AminoAcid('&',			0,		0, "Modified Amino Acid", 	23),
-	//	new AminoAcid('~',	115.04293,	115.1,	"deamidated asparagine",24),
-	//	new AminoAcid('`',	129.05858,	129.1,	"deamidated glutamine", 25),
+
 	};
-	
-	@SuppressWarnings("DataFlowIssue")
+
+
     public static void modifiedAminoAcidMass(char AA, double fixedModification){
-		aaTable[AA-'A'].monoMass += fixedModification;	
+		aaTable[AA-'A'].monoMass += fixedModification;
 		aaTable[AA-'A'].avgMass += fixedModification;
 		if( aaTable[AA-'A'].monoMass > maxAAMass ) maxAAMass = aaTable[AA-'A'].monoMass;
 		if( aaTable[AA-'A'].monoMass < minAAMass ) minAAMass = aaTable[AA-'A'].monoMass;
 		if( AA != 'C' ) aaTable[AA-'A'].isLabelled = true;
 	}
-	@SuppressWarnings("DataFlowIssue")
+
 	public static void canBeEasilyModified(char AA){
 		aaTable[AA-'A'].isLabelled = true;
 	}
-	
+
 	public static char getAminoAcidBy3Letter( String threeL ) {
 		if( threeL.compareTo("Ala") == 0 ) return 'A';
 		if( threeL.compareTo("Cys") == 0 ) return 'C';
