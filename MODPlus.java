@@ -475,7 +475,7 @@ public class MODPlus {
                     mutables.precursorTolerance = chargedSpectra.get(z).getPrecursorTolerance();
                     mutables.precursorAccuracy = chargedSpectra.get(z).getPrecursorAccuracy();
                     mutables.gapTolerance = chargedSpectra.get(z).getGapTolerance();
-                    mutables.gapAccuracy = Mutables.DEFAULT_GAPACCURACY;
+                    mutables.gapAccuracy = mutables.precursorAccuracy + 2*Mutables.fragmentTolerance/*Mutables.DEFAULT_GAPACCURACY*/;
                     mutables.nonModifiedDelta = chargedSpectra.get(z).getNonModifiedDelta();
                     Spectrum spectrum = chargedSpectra.get(z).getSpectrum();
                     if (spectrum == null) {
