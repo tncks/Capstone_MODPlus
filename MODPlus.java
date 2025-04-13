@@ -23,6 +23,7 @@ public class MODPlus {
     static boolean dynamicPMCorrection = false, multiBlind = true;
     static int numHeatedPeptides = 50;
     static ConcurrentHashMap<Integer, ResultEntry> results = new ConcurrentHashMap<>();
+    final static ConcurrentHashMap<Integer, Integer> simpleTempCache = new ConcurrentHashMap<>();
     private static final String[] message = {
             "[Error] Cannot read any MS/MS scan from input dataset.\r\n" +
                     "[Error] Check consistency between input file and its format.",
@@ -351,6 +352,7 @@ public class MODPlus {
         System.out.println();
 
         final int iterSize = scaniter.size();
+        simpleTempCache.put(0, iterSize);
         String identifier = Constants.SPECTRUM_LOCAL_PATH;
         identifier = identifier.substring(0, identifier.lastIndexOf('.'));
 
@@ -366,24 +368,26 @@ public class MODPlus {
         );
 
 
+
+
         // TODO: mgf code fine tuned verification(with debug) and do mzxml refactoring work (for now, only mgf implemented)
         // Notice(1) possible JIT compile hotspot uncovered point (still slow)
         // Notice(2) Refactored (method has been extracted) // separate logic implemented for multi-threads //change log
         while (scaniter.hasNext()) {
             ArrayList<MSMScan> chargedSpectra = scaniter.getNext();
-            System.out.println("MODPlus | " + scaniter.getIndex() + "/ all");
+            //System.out.println("MODPlus | " + scaniter.getIndex() + "/ all");
             executor.submit(new MODPlusTask(chargedSpectra, ixPDB, considerIsotopeErr, scaniter.getIndex()));
         }
 
 
         executor.shutdown();  // cpu jobs now clean up
-        if (!executor.awaitTermination(30, TimeUnit.MINUTES)) {
+        if (!executor.awaitTermination(60, TimeUnit.MINUTES)) {
             System.out.println("Timeout reached, forcing shutdown...");
             executor.shutdownNow();
         }
 
 
-        // TODO: extract method
+        // TODO: extract method (also modify local path hard code)
         final String fixedIdentifier = identifier;
         Runnable ioHandler = () -> {
 
@@ -393,7 +397,7 @@ public class MODPlus {
                     ResultEntry entry = results.get(i);
                     if (entry != null) {
                         /* semantic -> local path hard coded should be changed later */
-                        out.println(">>" + Constants.SPECTRUM_LOCAL_PATH.substring(0, 4) + "\t" + entry.scan.getHeader()); ///
+                        out.println(">>" + Constants.SPECTRUM_LOCAL_PATH.substring(0, 4) + "\t" + entry.scan.getHeader());
 
                         for (int k = 0; k < entry.candidates.size(); k++) {
                             AnsPeptide candidate = entry.candidates.get(k);
@@ -414,11 +418,17 @@ public class MODPlus {
         };
 
         long cpuTimeByThousandsUnit = System.currentTimeMillis() - startTime;
+        System.out.print("\r");
+        System.out.print("\n");
+        System.out.println();
+        System.out.print("\rMODPlus | " + simpleTempCache.get(0) + "/" + simpleTempCache.get(0));
+        System.out.print("\r");
+        System.out.println();
         System.out.println("[MOD-Plus] CPU Time     : " + cpuTimeByThousandsUnit / 1000 + " Sec"); // logging and debug purpose
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(ioHandler, 1_000, TimeUnit.MILLISECONDS); // Prepare planned extra I/O job with start delay of 1.0s
         scheduler.shutdown();
-        int timeOut = iterSize > 10000 ? 3_500 : 1_600;   // prepare max time reaching config 3.5s or 1.6s (actually 0.6s because of start delay 1s)
+        int timeOut = iterSize > 10000 ? 7_000 : 3_000;
         if (!scheduler.awaitTermination(timeOut, TimeUnit.MILLISECONDS)) {
             System.out.println("Timeout reached...");
             scheduler.shutdownNow();
@@ -468,6 +478,7 @@ public class MODPlus {
                 ArrayList<AnsPeptide> candidates = null;
 
 
+                simpleTempCache.put(order, 0);
                 for (int z = 0; z < chargedSpectra.size(); z++) {
 
                     // logic idea: copy the global static Mutables state to the thread-local instance
@@ -475,12 +486,10 @@ public class MODPlus {
                     mutables.precursorTolerance = chargedSpectra.get(z).getPrecursorTolerance();
                     mutables.precursorAccuracy = chargedSpectra.get(z).getPrecursorAccuracy();
                     mutables.gapTolerance = chargedSpectra.get(z).getGapTolerance();
-                    mutables.gapAccuracy = mutables.precursorAccuracy + 2*Mutables.fragmentTolerance/*Mutables.DEFAULT_GAPACCURACY*/;
+                    mutables.gapAccuracy = mutables.precursorAccuracy + 2*Mutables.fragmentTolerance;
                     mutables.nonModifiedDelta = chargedSpectra.get(z).getNonModifiedDelta();
                     Spectrum spectrum = chargedSpectra.get(z).getSpectrum();
-                    if (spectrum == null) {
-                        System.out.println("specturm is null !");
-                    }
+
                     PGraph graph = spectrum.getPeakGraph();
                     spectrum.setCorrectedParentMW(graph.correctMW(dynamicPMCorrection));
                     TagPool tPool = null;
@@ -524,6 +533,7 @@ public class MODPlus {
                     }
 
                 }
+
                 if (selected != -1) {
 
                     HashMap<String, ArrayList<PeptideMatchToProtein>> seqToProtMap = new HashMap<>();
@@ -541,7 +551,9 @@ public class MODPlus {
                     }
 
                     results.put(order, new ResultEntry(chargedSpectra.get(selected), candidates, seqToProtMap));
+
                 }
+                System.out.print("\rMODPlus | " + simpleTempCache.size() + "/" + simpleTempCache.get(0));
 
 
             } catch (Exception e) {
