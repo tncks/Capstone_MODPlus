@@ -375,7 +375,6 @@ public class MODPlus {
         // Notice(2) Refactored (method has been extracted) // separate logic implemented for multi-threads //change log
         while (scaniter.hasNext()) {
             ArrayList<MSMScan> chargedSpectra = scaniter.getNext();
-            //System.out.println("MODPlus | " + scaniter.getIndex() + "/ all");
             executor.submit(new MODPlusTask(chargedSpectra, ixPDB, considerIsotopeErr, scaniter.getIndex()));
         }
 
@@ -421,7 +420,7 @@ public class MODPlus {
         System.out.print("\r");
         System.out.print("\n");
         System.out.println();
-        System.out.print("\rMODPlus | " + simpleTempCache.get(0) + "/" + simpleTempCache.get(0));
+        System.out.print("\r           " );
         System.out.print("\r");
         System.out.println();
         System.out.println("[MOD-Plus] CPU Time     : " + cpuTimeByThousandsUnit / 1000 + " Sec"); // logging and debug purpose
@@ -478,7 +477,9 @@ public class MODPlus {
                 ArrayList<AnsPeptide> candidates = null;
 
 
+                System.out.print("\rMODPlus | " + simpleTempCache.size() + "/" + simpleTempCache.get(0));
                 simpleTempCache.put(order, 0);
+                // TODO: make code block JIT optimized
                 for (int z = 0; z < chargedSpectra.size(); z++) {
 
                     // logic idea: copy the global static Mutables state to the thread-local instance
@@ -553,7 +554,7 @@ public class MODPlus {
                     results.put(order, new ResultEntry(chargedSpectra.get(selected), candidates, seqToProtMap));
 
                 }
-                System.out.print("\rMODPlus | " + simpleTempCache.size() + "/" + simpleTempCache.get(0));
+
 
 
             } catch (Exception e) {
