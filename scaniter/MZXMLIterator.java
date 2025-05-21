@@ -1,5 +1,6 @@
 package scaniter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.systemsbiology.jrap.stax.MSXMLParser;
@@ -11,7 +12,7 @@ public class MZXMLIterator extends ScanIterator {
     private MSXMLParser parser;
     private int maxScanNo, scanNo;
 
-    public MZXMLIterator(String fileName) {
+    public MZXMLIterator(String fileName) throws IOException {
 
         super(fileName);
         try {
@@ -35,7 +36,7 @@ public class MZXMLIterator extends ScanIterator {
         }
     }
 
-    public ArrayList<MSMScan> getNext() {
+    public ArrayList<MSMScan> getNext() throws IOException {
 
         ArrayList<MSMScan> scanlist = new ArrayList<>();
         MSMScan curScan;

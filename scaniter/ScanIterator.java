@@ -7,16 +7,15 @@ import java.util.ArrayList;
 import modi.Constants;
 
 public abstract class ScanIterator {
-	
-	public static final int MIN_ASSUMED_CHARGE = 2;
-    public static final int MAX_ASSUMED_CHARGE = 3;
+
+	public static int MIN_ASSUMED_CHARGE = 2, MAX_ASSUMED_CHARGE = 3;
 	public int sizeOfScans;
 	public int scanIndex;
-	public final String fileName;
+	public String fileName;
 	public String baseName;
 	public BufferedReader fin;
-	
-	public ScanIterator(String fName) {
+
+	public ScanIterator(String fName) throws IOException{
 		fileName = fName;
 		baseName = fileName.replace('\\', '/');
 		baseName = baseName.substring(baseName.lastIndexOf('/')+1, baseName.lastIndexOf('.'));
@@ -24,22 +23,22 @@ public abstract class ScanIterator {
 		scanIndex = 0;
 		fin = null;
 	}
-	
+
 	public String getFileName(){ return fileName; }
 	public int size(){ return sizeOfScans; }
 	public int getIndex(){ return scanIndex; }
-	
+
 	public boolean hasNext() throws IOException {
 		if( scanIndex <= sizeOfScans ) return true;
-		if( fin != null ) fin.close();		
+		if( fin != null ) fin.close();
 		return false;
 	}
-	
-	public abstract ArrayList<MSMScan> getNext() throws IOException; 	
-	
+
+	public abstract ArrayList<MSMScan> getNext() throws IOException;
+
 	public static ScanIterator get(String specFile) throws IOException{
 		System.out.print( "Reading MS/MS spectra.....  " );
-		
+
 		ScanIterator scaniter = null;
 		if( specFile.toLowerCase().endsWith(".pkl") ){
 			Constants.SPECTRA_FILE_TYPE = Constants.spectra_format.PKL;
@@ -60,13 +59,13 @@ public abstract class ScanIterator {
 		else if( specFile.toLowerCase().endsWith(".mzxml") ){
 			Constants.SPECTRA_FILE_TYPE = Constants.spectra_format.MZXML;
 			scaniter = new MZXMLIterator( specFile );
-		}		
+		}
 		return scaniter;
 	}
-	
+
 	public static ScanIterator get(String specFile, Constants.spectra_format type) throws IOException{
 		System.out.print( "Reading MS/MS spectra.....  " );
-		
+
 		ScanIterator scaniter = null;
 		if( Constants.spectra_format.PKL == type ){
 			scaniter = new PKLIterator( specFile );
@@ -82,7 +81,7 @@ public abstract class ScanIterator {
 		}
 		else if( Constants.spectra_format.MZXML == type ){
 			scaniter = new MZXMLIterator( specFile );
-		}		
+		}
 		return scaniter;
 	}
 }
