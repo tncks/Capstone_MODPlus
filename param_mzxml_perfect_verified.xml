@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <search user="Seungjin" title="BeetleGut" >
 
-    <dataset local_path="/home/hyu2/test/modplusfactory/b1945_293T_proteinID_09B_QE3_122212_long.mgf" format="mgf" instrument="QTOF" />
+    <dataset local_path="/home/hyu2/test/modplusfactory/b1925_293T_proteinID_05A_QE3_122212_long.mzXML" format="mzxml" instrument="QTOF" />
     <!-- format=[mgf|pkl|dta|ms2|mzxml], instrument=[QTOF|TRAP] -->
     <database local_path="/home/hyu2/data_folder/data/uniprotkb_taxonomy_id_9606_AND_reviewed_2025_03_05.fasta" />
 

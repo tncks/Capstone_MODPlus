@@ -2,6 +2,7 @@ import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import moda.*;
 import modi.*;
@@ -368,8 +369,6 @@ public class MODPlus {
         );
 
 
-
-
         // TODO: mgf code fine tuned verification(with debug) and do mzxml refactoring work (for now, only mgf implemented)
         // Notice(1) possible JIT compile hotspot uncovered point (still slow)
         // Notice(2) Refactored (method has been extracted) // separate logic implemented for multi-threads //change log
@@ -413,14 +412,13 @@ public class MODPlus {
             }
 
 
-
         };
 
         long cpuTimeByThousandsUnit = System.currentTimeMillis() - startTime;
         System.out.print("\r");
         System.out.print("\n");
         System.out.println();
-        System.out.print("\r           " );
+        System.out.print("\r           ");
         System.out.print("\r");
         System.out.println();
         System.out.println("[MOD-Plus] CPU Time     : " + cpuTimeByThousandsUnit / 1000 + " Sec"); // logging and debug purpose
@@ -435,7 +433,7 @@ public class MODPlus {
 
 
         System.out.println("[MOD-Plus] I/O Time     : " + (((System.currentTimeMillis() - startTime) / 1000) - (cpuTimeByThousandsUnit / 1000)) + " Sec");  // logging and debug purpose
-        System.out.println("[MOD-Plus] Elapsed Time : " +   (System.currentTimeMillis() - startTime) / 1000 + " Sec"); // total
+        System.out.println("[MOD-Plus] Elapsed Time : " + (System.currentTimeMillis() - startTime) / 1000 + " Sec"); // total
 
         return 0;
     }
@@ -459,88 +457,76 @@ public class MODPlus {
         private final StemTagTrie ixPDB;
         private final boolean considerIsotopeErr;
         private final int order;
+        private final int chargedSpectraSize;
 
         public MODPlusTask(ArrayList<MSMScan> chargedSpectra, StemTagTrie ixPDB, boolean considerIsotopeErr, int order) {
             this.chargedSpectra = chargedSpectra;
             this.ixPDB = ixPDB;
             this.considerIsotopeErr = considerIsotopeErr;
             this.order = order;
+            this.chargedSpectraSize = chargedSpectra.size();
         }
 
         @Override
         public void run() {
             try {
+                System.out.print("\rMODPlus | " + simpleTempCache.size() + "/" + simpleTempCache.get(0));
+                simpleTempCache.put(order, 0);
                 Mutables mutables = ThreadLocalMutables.get();
 
 
-                int selected = -1;
+                AtomicInteger selected = new AtomicInteger(-1);
                 ArrayList<AnsPeptide> candidates = null;
+                OneMOD oneMODInstance = new OneMOD();
+                MultiMOD multiMODInstance = new MultiMOD();
+                DatabaseBuilder dbBuilderInstance = new DatabaseBuilder(numHeatedPeptides);
+                ResultPasser myResultPasser = new ResultPasser();
 
 
-                System.out.print("\rMODPlus | " + simpleTempCache.size() + "/" + simpleTempCache.get(0));
-                simpleTempCache.put(order, 0);
-                // TODO: make code block JIT optimized
-                for (int z = 0; z < chargedSpectra.size(); z++) {
+                for (int i = 0; i < chargedSpectraSize; i++) {
 
                     // logic idea: copy the global static Mutables state to the thread-local instance
-                    mutables.maxNoOfC13 = chargedSpectra.get(z).getMaxNoOfC13();
-                    mutables.precursorTolerance = chargedSpectra.get(z).getPrecursorTolerance();
-                    mutables.precursorAccuracy = chargedSpectra.get(z).getPrecursorAccuracy();
-                    mutables.gapTolerance = chargedSpectra.get(z).getGapTolerance();
-                    mutables.gapAccuracy = mutables.precursorAccuracy + 2*Mutables.fragmentTolerance;
-                    mutables.nonModifiedDelta = chargedSpectra.get(z).getNonModifiedDelta();
-                    Spectrum spectrum = chargedSpectra.get(z).getSpectrum();
+                    MSMScan currentScan = chargedSpectra.get(i);
+                    copyIntoLocalMutables(currentScan, mutables);
+
+
+                    Spectrum spectrum = currentScan.getSpectrum();
 
                     PGraph graph = spectrum.getPeakGraph();
                     spectrum.setCorrectedParentMW(graph.correctMW(dynamicPMCorrection));
-                    TagPool tPool = null;
-
-                    for (int t = 0; t < spectrum.size(); t++) {
-                        if (Math.abs(spectrum.get(t).getMass() - spectrum.getPrecursor()) < 2) {
-                            spectrum.remove(t);
-                            t--;
-                            continue;
-                        }
-                        spectrum.get(t).setIndex(t);
-                    }
-
-                    spectrum.normalizeIntensityLocally();
-
-                    int extra = (spectrum.getCharge() > 2 && Constants.INSTRUMENT_TYPE != Constants.msms_type.QTOF) ? 2 : 0;
-                    spectrum.peakSelection(Constants.selectionWindowSize, Constants.minNumOfPeaksInWindow + extra);
-
-                    tPool = spectrum.generateTags(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain, Mutables.massToleranceForDenovo);
+                    ArrayList<TagPool> tPoolHolder = new ArrayList<>();
 
 
-                    DPHeap heatedPepts = new OneMOD().getHeatedPeptides(ixPDB, graph, tPool, considerIsotopeErr);
-                    DPHeap tepidPepts = null;
-                    if (Constants.maxPTMPerPeptide > 1)
-                        if (heatedPepts == null || !heatedPepts.isConfident()) {
-                            tepidPepts = heatedPepts;
-                            heatedPepts = new MultiMOD().getHeatedPeptides(ixPDB, graph, tPool, dynamicPMCorrection);
-                        }
+                    preprocessSpectrum(spectrum);
 
-                    if (heatedPepts == null) return; //change log: continue->return
 
-                    HeatedDB bitDB = new DatabaseBuilder(numHeatedPeptides).getHeatedDB(ixPDB, heatedPepts, tepidPepts);
-                    TagTrie bitTrie = bitDB.getPartialDB(ixPDB);
 
-                    ArrayList<AnsPeptide> tp = new ResultPasser().dynamicMODeye(bitTrie, graph, tPool);
-                    if (tp.size() > 0) {
-                        if (candidates == null || candidates.get(0).compareTo(tp.get(0)) == 1) {
-                            candidates = tp;
-                            selected = 0;
-                        }
-                    }
+                    ArrayList<DPHeap> holder = new ArrayList<>();
+
+
+
+
+                    if (processSpectrum(spectrum, tPoolHolder, graph, oneMODInstance, multiMODInstance, holder) == -1)
+                        return; //change log: continue->return
+
+                    DPHeap heatedPepts = holder.get(0);
+                    DPHeap tepidPepts = holder.get(1);
+
+                    candidates = extractFinalResultOnValidCandidates(tPoolHolder.get(0), dbBuilderInstance, heatedPepts, tepidPepts, myResultPasser, graph, candidates, selected);
+
+
+                    tPoolHolder.clear();
+
 
                 }
 
-                if (selected != -1) {
+                if (selected.get() != -1) {
 
                     HashMap<String, ArrayList<PeptideMatchToProtein>> seqToProtMap = new HashMap<>();
 
-                    for (int k = 0; k < candidates.size(); k++) {
-                        String tpSeq = candidates.get(k).getPeptideSequence();
+                    final int candidatesSize = candidates.size();
+                    for (int i = 0; i < candidatesSize; i++) {
+                        String tpSeq = candidates.get(i).getPeptideSequence();
                         ArrayList<PeptideMatchToProtein> matchedProteins = seqToProtMap.get(tpSeq);
 
                         if (matchedProteins == null) {
@@ -551,10 +537,9 @@ public class MODPlus {
                         // 기존에 있으면 테이블에 등록하지 않음. 즉 스킵합.
                     }
 
-                    results.put(order, new ResultEntry(chargedSpectra.get(selected), candidates, seqToProtMap));
+                    results.put(order, new ResultEntry(chargedSpectra.get(selected.get()), candidates, seqToProtMap));
 
                 }
-
 
 
             } catch (Exception e) {
@@ -563,6 +548,78 @@ public class MODPlus {
                 ThreadLocalMutables.clear(); // prevent memory leak
             }
         }
+
+
+        private void copyIntoLocalMutables(MSMScan currentScan, Mutables mutables) {
+            mutables.maxNoOfC13 = currentScan.getMaxNoOfC13();
+            mutables.precursorTolerance = currentScan.getPrecursorTolerance();
+            mutables.precursorAccuracy = currentScan.getPrecursorAccuracy();
+            mutables.gapTolerance = currentScan.getGapTolerance();
+            mutables.nonModifiedDelta = currentScan.getNonModifiedDelta();
+            mutables.gapAccuracy = mutables.precursorAccuracy + 2 * Mutables.fragmentTolerance;
+        }
+
+
+        private void preprocessSpectrum(Spectrum spectrum) {
+
+            for (int j = 0; j < spectrum.size(); j++) {
+                if (Math.abs(spectrum.get(j).getMass() - spectrum.getPrecursor()) < 2) {
+                    spectrum.remove(j);
+                    j--;
+                    continue;
+                }
+                spectrum.get(j).setIndex(j);
+            }
+
+            spectrum.normalizeIntensityLocally();
+
+
+        }
+
+
+        private ArrayList<AnsPeptide> extractFinalResultOnValidCandidates(TagPool tPool, DatabaseBuilder dbBuilderInstance, DPHeap heatedPepts, DPHeap tepidPepts, ResultPasser myResultPasser, PGraph graph, ArrayList<AnsPeptide> candidates, AtomicInteger selected) {
+
+            HeatedDB bitDB = dbBuilderInstance.getHeatedDB(ixPDB, heatedPepts, tepidPepts);
+            TagTrie bitTrie = bitDB.getPartialDB(ixPDB);
+
+            ArrayList<AnsPeptide> tp = myResultPasser.dynamicMODeye(bitTrie, graph, tPool);
+            if (tp.size() > 0 && (candidates == null || candidates.get(0).compareTo(tp.get(0)) == 1)) {
+
+                candidates = tp;
+                selected.set(0);
+
+            }
+
+            ArrayList<AnsPeptide> result = candidates;
+            return result;
+        }
+
+
+        private int processSpectrum(Spectrum spectrum, ArrayList<TagPool> tPoolHolder, PGraph graph, OneMOD oneMODInstance, MultiMOD multiMODInstance, ArrayList<DPHeap> holder) {
+            int extra = (spectrum.getCharge() > 2 && Constants.INSTRUMENT_TYPE != Constants.msms_type.QTOF) ? 2 : 0;
+            spectrum.peakSelection(Constants.selectionWindowSize, Constants.minNumOfPeaksInWindow + extra);
+
+            TagPool tPool = spectrum.generateTags(Constants.minTagLength, Constants.minTagLengthPeptideShouldContain, Mutables.massToleranceForDenovo);
+
+
+            DPHeap heatedPepts = oneMODInstance.getHeatedPeptides(ixPDB, graph, tPool, considerIsotopeErr);
+            DPHeap tepidPepts = null;
+            boolean isHeatedPeptsNull = heatedPepts == null;
+            if (Constants.maxPTMPerPeptide > 1) {
+                if (isHeatedPeptsNull || !heatedPepts.isConfident()) {
+                    tepidPepts = heatedPepts;
+                    heatedPepts = multiMODInstance.getHeatedPeptides(ixPDB, graph, tPool, dynamicPMCorrection);
+                }
+            }
+
+            tPoolHolder.add(tPool);
+            holder.add(heatedPepts);
+            holder.add(tepidPepts);
+            if (isHeatedPeptsNull) return -1;
+            return 1;
+        }
+
+
     }
 }
 
