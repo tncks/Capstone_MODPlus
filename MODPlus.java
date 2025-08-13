@@ -395,7 +395,7 @@ public class MODPlus {
                     ResultEntry entry = results.get(i);
                     if (entry != null) {
                         /* semantic -> local path hard coded should be changed later */
-                        out.println(">>" + Constants.SPECTRUM_LOCAL_PATH.substring(0, 4) + "\t" + entry.scan.getHeader());
+                        out.println(">>" + Constants.SPECTRUM_LOCAL_PATH/*.substring(0, 4)*/ + "\t" + entry.scan.getHeader());
 
                         for (int k = 0; k < entry.candidates.size(); k++) {
                             AnsPeptide candidate = entry.candidates.get(k);
@@ -425,7 +425,7 @@ public class MODPlus {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(ioHandler, 1_000, TimeUnit.MILLISECONDS); // Prepare planned extra I/O job with start delay of 1.0s
         scheduler.shutdown();
-        int timeOut = iterSize > 10000 ? 7_000 : 3_000;
+        int timeOut = iterSize > 10000 ? 7_000 : 3_000; // 숫자 하드코딩 해둔 부분 - 클린 코드로 변경 필요!
         if (!scheduler.awaitTermination(timeOut, TimeUnit.MILLISECONDS)) {
             System.out.println("Timeout reached...");
             scheduler.shutdownNow();
@@ -507,12 +507,15 @@ public class MODPlus {
 
 
                     if (processSpectrum(spectrum, tPoolHolder, graph, oneMODInstance, multiMODInstance, holder) == -1)
-                        return; //change log: continue->return
+                        continue;
 
                     DPHeap heatedPepts = holder.get(0);
                     DPHeap tepidPepts = holder.get(1);
 
                     candidates = extractFinalResultOnValidCandidates(tPoolHolder.get(0), dbBuilderInstance, heatedPepts, tepidPepts, myResultPasser, graph, candidates, selected);
+
+
+
 
 
                     tPoolHolder.clear();
@@ -583,7 +586,7 @@ public class MODPlus {
             TagTrie bitTrie = bitDB.getPartialDB(ixPDB);
 
             ArrayList<AnsPeptide> tp = myResultPasser.dynamicMODeye(bitTrie, graph, tPool);
-            if (tp.size() > 0 && (candidates == null || candidates.get(0).compareTo(tp.get(0)) == 1)) {
+            if (tp.size() > 0 && (candidates == null || (!candidates.isEmpty() && candidates.get(0) != null && tp.get(0) != null && candidates.get(0).compareTo(tp.get(0)) == 1))) {
 
                 candidates = tp;
                 selected.set(0);
@@ -604,18 +607,20 @@ public class MODPlus {
 
             DPHeap heatedPepts = oneMODInstance.getHeatedPeptides(ixPDB, graph, tPool, considerIsotopeErr);
             DPHeap tepidPepts = null;
-            boolean isHeatedPeptsNull = heatedPepts == null;
+
             if (Constants.maxPTMPerPeptide > 1) {
-                if (isHeatedPeptsNull || !heatedPepts.isConfident()) {
+                if (heatedPepts == null || !heatedPepts.isConfident()) {
                     tepidPepts = heatedPepts;
                     heatedPepts = multiMODInstance.getHeatedPeptides(ixPDB, graph, tPool, dynamicPMCorrection);
                 }
             }
 
+            if (heatedPepts == null) return -1;
+
             tPoolHolder.add(tPool);
             holder.add(heatedPepts);
             holder.add(tepidPepts);
-            if (isHeatedPeptsNull) return -1;
+
             return 1;
         }
 
