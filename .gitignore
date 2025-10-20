@@ -6,3 +6,5 @@ MODPlusProject.iml
 *.mgf
 *.mzXML
 *.fasta
+txt_dir/
+log_dir/

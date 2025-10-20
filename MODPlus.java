@@ -21,10 +21,20 @@ import scaniter.ScanIterator;
 
 
 public class MODPlus {
-    static boolean dynamicPMCorrection = false, multiBlind = true;
-    static int numHeatedPeptides = 50;
-    static ConcurrentHashMap<Integer, ResultEntry> results = new ConcurrentHashMap<>();
-    final static ConcurrentHashMap<Integer, Integer> simpleTempCache = new ConcurrentHashMap<>();
+    static boolean dynamicPMCorrection = false, multiBlind = true;  // pm correction, multi blind configuration constants now defined at first
+    static int numHeatedPeptides = 50; // defined at first
+    static ConcurrentHashMap<Integer, ResultEntry> results = new ConcurrentHashMap<>(); // To hold result (and its order) which will be written in output file at the final I/O step.
+    // assume map structure of the results:   { order(KEY): ResultEntry(VALUE) }
+    final static ConcurrentHashMap<Integer, Integer> resourceCache = new ConcurrentHashMap<>();
+    /**
+     * field - resourceCache
+     * Cache used.
+     * This cache is a hash map based on concurrent java object.
+     * For multi threads environment, cache holds iteration order of all tasks.
+     * Regardless of the number of threads, order of tasks are guranteed with the power of cache implementation.
+     */
+
+
     private static final String[] message = {
             "[Error] Cannot read any MS/MS scan from input dataset.\r\n" +
                     "[Error] Check consistency between input file and its format.",
@@ -47,6 +57,11 @@ public class MODPlus {
     };
 
 
+    /**
+     * main entry point
+     * @param args
+     * base arguments
+     */
     public static void main(String[] args) throws Exception {
         Constants.engine = "modplus";
         Constants.engineVersion = "hyu";
@@ -67,6 +82,13 @@ public class MODPlus {
     }
 
 
+    /**
+     * Set project parameter
+     * @param Prixparam
+     * the configuration parameter
+     * @return
+     * _
+     */
     protected static int set_parameter(String Prixparam) throws Exception {
 
         System.out.println("Reading parameter.....");
@@ -133,7 +155,7 @@ public class MODPlus {
             String cut = enzyme.getAttributeValue("cut");
             String sence = enzyme.getAttributeValue("sence");
             Mutables.protease = new ProtCutter(enzymeName, cut, sence);
-        }//*/
+        }
 
         Element com_enzyme = search.getChild("combined_enzyme");
         if (com_enzyme != null) {
@@ -302,13 +324,20 @@ public class MODPlus {
             }
         }
 
-        Constants.adjustParameters(); // slightly changed: adjustParameters
+        Constants.adjustParameters();
 
         System.out.println();
         return 0;
     }
 
 
+    /**
+     * wrapper method
+     * @param arg
+     * set_parameter method uses
+     * @throws Exception
+     * _
+     */
     public static void run(String arg) throws Exception {
 
 
@@ -320,7 +349,6 @@ public class MODPlus {
         }
 
         try {
-
             File analPath = new File(Constants.SPECTRUM_LOCAL_PATH);
             if (analPath.isDirectory()) {
                 String type = Constants.SPECTRA_FILE_TYPE.toString().toLowerCase();
@@ -341,6 +369,12 @@ public class MODPlus {
     }
 
 
+    /**
+     * Multi threads environment support. method has been verified.
+     * performs search job using threads parallelly.
+     * @return
+     * (0) on sucessful condition
+     */
     static int modplus_mod_search() throws Exception {
         System.out.println("Starting MODPlus for modification search!");
 
@@ -353,13 +387,14 @@ public class MODPlus {
         System.out.println();
 
         final int iterSize = scaniter.size();
-        simpleTempCache.put(0, iterSize);
+        resourceCache.put(0, iterSize);
         String identifier = Constants.SPECTRUM_LOCAL_PATH;
         identifier = identifier.substring(0, identifier.lastIndexOf('.'));
 
         final long startTime = System.currentTimeMillis();
 
         int corePoolSize = Runtime.getRuntime().availableProcessors() - 1;
+
         int maxPoolSize = corePoolSize;
         final long keepAliveTime = 0L;
         final int qCapacity = iterSize + 500; // more than iterSize (give a capacity enough)
@@ -369,9 +404,7 @@ public class MODPlus {
         );
 
 
-        // TODO: mgf code fine tuned verification(with debug) and do mzxml refactoring work (for now, only mgf implemented)
-        // Notice(1) possible JIT compile hotspot uncovered point (still slow)
-        // Notice(2) Refactored (method has been extracted) // separate logic implemented for multi-threads //change log
+        // Refactored (from single-thread -> to multi-threads) 
         while (scaniter.hasNext()) {
             ArrayList<MSMScan> chargedSpectra = scaniter.getNext();
             executor.submit(new MODPlusTask(chargedSpectra, ixPDB, considerIsotopeErr, scaniter.getIndex()));
@@ -385,7 +418,6 @@ public class MODPlus {
         }
 
 
-        // TODO: extract method (also modify local path hard code)
         final String fixedIdentifier = identifier;
         Runnable ioHandler = () -> {
 
@@ -394,8 +426,9 @@ public class MODPlus {
                 for (int i = 0; i < iterSize; i++) {
                     ResultEntry entry = results.get(i);
                     if (entry != null) {
-                        /* semantic -> local path hard coded should be changed later */
-                        out.println(">>" + Constants.SPECTRUM_LOCAL_PATH/*.substring(0, 4)*/ + "\t" + entry.scan.getHeader());
+
+
+                        out.println(">>" + Constants.SPECTRUM_LOCAL_PATH + "\t" + entry.scan.getHeader());
 
                         for (int k = 0; k < entry.candidates.size(); k++) {
                             AnsPeptide candidate = entry.candidates.get(k);
@@ -418,26 +451,29 @@ public class MODPlus {
         System.out.print("\r");
         System.out.print("\n");
         System.out.println();
-        System.out.print("\r           ");
+        System.out.print("\r");
         System.out.print("\r");
         System.out.println();
-        System.out.println("[MOD-Plus] CPU Time     : " + cpuTimeByThousandsUnit / 1000 + " Sec"); // logging and debug purpose
+        System.out.println("[MOD-Plus] CPU Time     : " + cpuTimeByThousandsUnit / 1_000 + " Sec");
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.schedule(ioHandler, 1_000, TimeUnit.MILLISECONDS); // Prepare planned extra I/O job with start delay of 1.0s
+        scheduler.schedule(ioHandler, 1_000, TimeUnit.MILLISECONDS); // Prepare final I/O job with start delay 1.0s
         scheduler.shutdown();
-        int timeOut = iterSize > 10000 ? 7_000 : 3_000; // 숫자 하드코딩 해둔 부분 - 클린 코드로 변경 필요!
+        int timeOut = iterSize > 10_000 ? 7_000 : 3_000; // if iterSize (input mgf|mzxml file) is big, have time set bigger for stable processing (at most 7.0s)
         if (!scheduler.awaitTermination(timeOut, TimeUnit.MILLISECONDS)) {
             System.out.println("Timeout reached...");
             scheduler.shutdownNow();
         }
 
 
-        System.out.println("[MOD-Plus] I/O Time     : " + (((System.currentTimeMillis() - startTime) / 1000) - (cpuTimeByThousandsUnit / 1000)) + " Sec");  // logging and debug purpose
+        System.out.println("[MOD-Plus] I/O Time     : " + (((System.currentTimeMillis() - startTime) / 1000) - (cpuTimeByThousandsUnit / 1000)) + " Sec");
         System.out.println("[MOD-Plus] Elapsed Time : " + (System.currentTimeMillis() - startTime) / 1000 + " Sec"); // total
 
         return 0;
     }
 
+    /**
+     * class which holds final results
+     */
     private static class ResultEntry {
         private final MSMScan scan;
         private final ArrayList<AnsPeptide> candidates;
@@ -452,11 +488,16 @@ public class MODPlus {
     }
 
 
+    /**
+     * class designed for running allocated job within active thread.
+     * implements Runnable interface.
+     * assumes that each task aligns with one thread.
+     */
     static class MODPlusTask implements Runnable {
         private final ArrayList<MSMScan> chargedSpectra;
         private final StemTagTrie ixPDB;
         private final boolean considerIsotopeErr;
-        private final int order;
+        private final int order;  // for multi threads environment
         private final int chargedSpectraSize;
 
         public MODPlusTask(ArrayList<MSMScan> chargedSpectra, StemTagTrie ixPDB, boolean considerIsotopeErr, int order) {
@@ -470,8 +511,8 @@ public class MODPlus {
         @Override
         public void run() {
             try {
-                System.out.print("\rMODPlus | " + simpleTempCache.size() + "/" + simpleTempCache.get(0));
-                simpleTempCache.put(order, 0);
+                System.out.print("\rMODPlus | " + resourceCache.size() + "/" + resourceCache.get(0));
+                resourceCache.put(order, 0); // With cache storing, output result orders be guranteed in a few steps even under multi threads environment.
                 Mutables mutables = ThreadLocalMutables.get();
 
 
@@ -485,7 +526,7 @@ public class MODPlus {
 
                 for (int i = 0; i < chargedSpectraSize; i++) {
 
-                    // logic idea: copy the global static Mutables state to the thread-local instance
+                    // What these lines do: Copy the global static Mutables state, write them into the thread-local instance
                     MSMScan currentScan = chargedSpectra.get(i);
                     copyIntoLocalMutables(currentScan, mutables);
 
@@ -500,10 +541,7 @@ public class MODPlus {
                     preprocessSpectrum(spectrum);
 
 
-
                     ArrayList<DPHeap> holder = new ArrayList<>();
-
-
 
 
                     if (processSpectrum(spectrum, tPoolHolder, graph, oneMODInstance, multiMODInstance, holder) == -1)
@@ -513,9 +551,6 @@ public class MODPlus {
                     DPHeap tepidPepts = holder.get(1);
 
                     candidates = extractFinalResultOnValidCandidates(tPoolHolder.get(0), dbBuilderInstance, heatedPepts, tepidPepts, myResultPasser, graph, candidates, selected);
-
-
-
 
 
                     tPoolHolder.clear();
@@ -533,11 +568,11 @@ public class MODPlus {
                         ArrayList<PeptideMatchToProtein> matchedProteins = seqToProtMap.get(tpSeq);
 
                         if (matchedProteins == null) {
-                            // 기존에 테이블에 없으면 새롭게 키 밸류 정보 등록 (최초)
+
                             matchedProteins = ixPDB.getMatchProteins(tpSeq);
                             seqToProtMap.put(tpSeq, matchedProteins);
                         }
-                        // 기존에 있으면 테이블에 등록하지 않음. 즉 스킵합.
+
                     }
 
                     results.put(order, new ResultEntry(chargedSpectra.get(selected.get()), candidates, seqToProtMap));
@@ -553,6 +588,13 @@ public class MODPlus {
         }
 
 
+        /**
+         * simply updates all mutables fields with currentScan data
+         * @param currentScan
+         * current scan
+         * @param mutables
+         * update target
+         */
         private void copyIntoLocalMutables(MSMScan currentScan, Mutables mutables) {
             mutables.maxNoOfC13 = currentScan.getMaxNoOfC13();
             mutables.precursorTolerance = currentScan.getPrecursorTolerance();
@@ -563,6 +605,11 @@ public class MODPlus {
         }
 
 
+        /**
+         * method which filters and normalizes spectrum.
+         * @param spectrum
+         * raw spectrum
+         */
         private void preprocessSpectrum(Spectrum spectrum) {
 
             for (int j = 0; j < spectrum.size(); j++) {
@@ -580,6 +627,28 @@ public class MODPlus {
         }
 
 
+        /**
+         * To classify meaningful data on collected candidates.
+         * This method returns a result list.
+         * @param tPool
+         * Tag Pool meta
+         * @param dbBuilderInstance
+         * Database Builder meta
+         * @param heatedPepts
+         * DPHeap meta
+         * @param tepidPepts
+         * DPHeap tepid meta
+         * @param myResultPasser
+         * Result passing value meta
+         * @param graph
+         * PGraph meta
+         * @param candidates
+         * Candidates
+         * @param selected
+         * Concurrent integer object which holds selection info
+         * @return
+         * the Anspeptide type list
+         */
         private ArrayList<AnsPeptide> extractFinalResultOnValidCandidates(TagPool tPool, DatabaseBuilder dbBuilderInstance, DPHeap heatedPepts, DPHeap tepidPepts, ResultPasser myResultPasser, PGraph graph, ArrayList<AnsPeptide> candidates, AtomicInteger selected) {
 
             HeatedDB bitDB = dbBuilderInstance.getHeatedDB(ixPDB, heatedPepts, tepidPepts);
@@ -598,6 +667,24 @@ public class MODPlus {
         }
 
 
+        /**
+         * This method wraps other methods like OneMOD, MultiMOD subroutines.
+         * The method works in our cases like an interface.
+         * Return (1) in normal cases. (-1) in null cases.
+         * Be careful with the method which has a similar name, preprocessSpectrum().
+         * @param spectrum
+         * Spectrum meta
+         * @param tPoolHolder
+         * Tag pool holder meta
+         * @param graph
+         * PGraph meta
+         * @param oneMODInstance
+         * OneMOD meta
+         * @param multiMODInstance
+         * MultiMOD meta
+         * @param holder
+         * holder in list type
+         */
         private int processSpectrum(Spectrum spectrum, ArrayList<TagPool> tPoolHolder, PGraph graph, OneMOD oneMODInstance, MultiMOD multiMODInstance, ArrayList<DPHeap> holder) {
             int extra = (spectrum.getCharge() > 2 && Constants.INSTRUMENT_TYPE != Constants.msms_type.QTOF) ? 2 : 0;
             spectrum.peakSelection(Constants.selectionWindowSize, Constants.minNumOfPeaksInWindow + extra);
@@ -627,8 +714,5 @@ public class MODPlus {
 
     }
 }
-
-
-
 
 
