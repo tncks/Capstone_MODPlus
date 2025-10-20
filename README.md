@@ -3,6 +3,7 @@
 ---
  - **Suchan Roh** 
  - 2022094839 `id`
+ - Hanyang University `CSE` (컴퓨터소프트웨어학부)
  - 졸업프로젝트2025-2팀
  - 졸업프로젝트 지도 교수: **백은옥 교수님**
 
@@ -27,15 +28,17 @@
 ## 1. 개요
 
 ### 기본 정보
-- **프로젝트명**: MODPlus
+- **프로젝트명**: MODPlus (병렬 처리 및 성능 개선 프로젝트)
+- **목표**: MODPlus 의 실행 시간을 유의미하게 단축하는 것이 목표.
+- **계획**: 기존 단일 스레드 코드를 멀티 스레드 코드로 리팩토링하는 것.
 - **생성일**: 2025년 3월 24일
 - **최종 업데이트**: 2025년 10월 20일
 
 
 ### 기술 스택
 - **언어**: Java
-- **Java 버전**: Java 23
-- **빌드 도구**: Java compiler, `intelliJ`
+- **Java 버전**: Java 23 (JDK 23.0.2) (Oracle OpenJDK)
+- **빌드 도구**: Java compiler, `IntelliJ`
 - **외부 라이브러리**:
     - `jdom-1.1.3.jar` 
     - `jrap_StAX_v5.2.jar` 
@@ -190,12 +193,13 @@ finally {
 ```
 
 **이슈 해결 일자**:
-- 2025-08-13  `06a6600`
+- 2025-08-13  
 ---
 
-### 쓰기 작업 성능 최적화
+### 쓰기 작업 처리 로직 보완
 
 **I/O 처리 개선**:
+- "Single thread" (I/O 작업만 단일 스레드 원칙 적용)
 - "timeout" (타임아웃 처리 개선)
 - "I/O handle" (I/O 작업 분리)
 
@@ -203,7 +207,7 @@ finally {
 - **CPU 작업과 I/O 작업 분리**:
    ```java
    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-   scheduler.schedule(ioHandler, 1_000, TimeUnit.MILLISECONDS); // 1초 지연 후 I/O
+   scheduler.schedule(ioHandler, 1_000, TimeUnit.MILLISECONDS); // (MODPlus.java) 1초 지연 후 I/O
    ```
 
 
@@ -214,7 +218,11 @@ finally {
 
 ## 6. 성능 측정
 
+### **평균 성능 향상률**: 기존 대비 약 `37.4 배` 의 실행 시간 단축
 
+- 최대 `41.0 배` 
+- 단, `37.4 배` 라는 수치는 `36` 코어 환경을 전제.
+- 비교 결과, 923s 로 멀티스레딩을 통한 시간 단축 확인. (기존 34,049s)
 
 **개선 전 (단일 스레드)**:
 ```java
@@ -235,12 +243,10 @@ ThreadPoolExecutor executor = new ThreadPoolExecutor(
 while (scaniter.hasNext()) {
     executor.submit(new ModPlusTask(...));
 }
-// 시간: CPU 코어 개수에 근접해 비례하는 수준의 실행 시간 개선
+// 개선 수준: CPU 코어 개수에 근접해 비례하는 수준의 실행 시간 개선
 ```
 
-**성능 향상률**: 최대 `27.0 배` (단, `36` 코어 환경)
 
-**평균 성능 향상률**: 일반적으로 약 `25.0배 ~ 26.0배` 사이에 분포
 
 
 ---
@@ -249,9 +255,10 @@ while (scaniter.hasNext()) {
 
 ### a. 프로파일링 진행
 ### 리팩토링을 진행하기 위해, 코드 병목 지점을 먼저 식별.
-#### `intelliJ Runtime Profiler`
 #### 프로파일러를 통해 평균 실행 시간보다 느린 속도를 보이는 함수 식별에 성공.
+- #### 프로파일링 `IntelliJ Profiler`
 - #### 위 분석을 바탕으로 `MODPlus.java` 파일의 병목 지점을 리팩토링하기로 계획.
+- #### `PTMDB.java` 의 일부 병목 지점 리팩토링도 동시에 추진.
 
 ### b. 구현
 ### 식별된 병목 지점에 대해 실제 리팩토링을 진행.
@@ -274,7 +281,7 @@ while (scaniter.hasNext()) {
 
 ## 8. Appendix
 
-### 외부 라이브러리 (변경사항 없이, 그대로 사용 유지)
+### 외부 라이브러리 (변경점 없음)
 
 | 라이브러리 | 버전 | 용도 | 크기 |
 |-----------|------|------|------|
@@ -294,3 +301,21 @@ import java.util.concurrent.atomic.*;     // AtomicInteger
 - `ConcurrentHashMap` → 스레드 기반 일관된 결과 저장
 - `AtomicInteger` → 스레드 안전 카운터
 - `ThreadLocal` → 스레드별 상태 분리
+
+**설치 및 사용**:
+- `git clone`
+- `param.xml` 을 환경에 맞게 세팅
+- 오라클 공식 JDK 23 준비 (23.0.2 버전)
+- 외부 라이브러리 준비 (jdom, jrap)
+- 모든 설정이 완료되면, 실행 준비가 완료
+
+**기타 깃 브랜치 설명**:
+- `main`을 최종 브랜치로 사용
+- 나머지 브랜치들 → deprecated
+- 브랜치가 3 개 있으나 `main` 브랜치만 사용
+
+**png**:
+
+<img width="904" height="400" alt="fig_001_modplus" src="https://github.com/user-attachments/assets/b469678d-bd44-4570-b15b-e5ea4dc74af5" />
+
+- Fig 1. Difference between single thread and multi threads
